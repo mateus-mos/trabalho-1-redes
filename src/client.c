@@ -10,7 +10,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include "lib/ConexaoRawSocket.h"
+#include "../lib/ConexaoRawSocket.h"
 
 int main() {
     //// Create a raw socket using the AF_PACKET address family, SOCK_RAW type, and htons(ETH_P_ALL) protocol
@@ -32,7 +32,7 @@ int main() {
     //    perror("setsockopt");
     //    exit(EXIT_FAILURE);
     //}
-    int socketfd = ConexaoRawSocket("lo");
+    int sockfd = ConexaoRawSocket("lo");
 
 
     // Construct the ethernet frame with destination MAC address, source MAC address, ethertype, payload, and checksum
