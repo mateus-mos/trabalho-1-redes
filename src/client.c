@@ -10,27 +10,30 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "lib/ConexaoRawSocket.h"
 
 int main() {
-    // Create a raw socket using the AF_PACKET address family, SOCK_RAW type, and htons(ETH_P_ALL) protocol
-    // AF_PACKET allows for direct access to the network interface at the packet level
-    // SOCK_RAW provides access to the underlying transport provider
-    // ETH_P_ALL specifies that all Ethernet frames will be captured
-    int sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-    if (sockfd == -1) {
-        perror("socket");
-        exit(EXIT_FAILURE);
-    }
+    //// Create a raw socket using the AF_PACKET address family, SOCK_RAW type, and htons(ETH_P_ALL) protocol
+    //// AF_PACKET allows for direct access to the network interface at the packet level
+    //// SOCK_RAW provides access to the underlying transport provider
+    //// ETH_P_ALL specifies that all Ethernet frames will be captured
+    //int sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+    //if (sockfd == -1) {
+    //    perror("socket");
+    //    exit(EXIT_FAILURE);
+    //}
 
-    // Bind the socket to a specific network interface, e.g., "eth0"
-    // This is done using the setsockopt function with the SO_BINDTODEVICE option
-    struct ifreq ifr;
-    memset(&ifr, 0, sizeof(ifr));
-    strncpy(ifr.ifr_name, "eth0", IFNAMSIZ);
-    if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) < 0) {
-        perror("setsockopt");
-        exit(EXIT_FAILURE);
-    }
+    //// Bind the socket to a specific network interface, e.g., "eth0"
+    //// This is done using the setsockopt function with the SO_BINDTODEVICE option
+    //struct ifreq ifr;
+    //memset(&ifr, 0, sizeof(ifr));
+    //strncpy(ifr.ifr_name, "eth0", IFNAMSIZ);
+    //if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) < 0) {
+    //    perror("setsockopt");
+    //    exit(EXIT_FAILURE);
+    //}
+    int socketfd = ConexaoRawSocket("lo");
+
 
     // Construct the ethernet frame with destination MAC address, source MAC address, ethertype, payload, and checksum
     // MAC addresses are 6 bytes long and are represented as uint8_t arrays
