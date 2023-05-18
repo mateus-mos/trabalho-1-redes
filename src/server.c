@@ -10,14 +10,29 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include "../lib/ConexaoRawSocket.h"
+#include "../lib/socket.h"
+
+#define PORT 27015 
 
 int main() {
-    int sockfd = ConexaoRawSocket("lo");
 
-    while(1){
+    printf("Creating socket...\n");
+    int sockfd = createSocket("lo");
+    printf("Socket created!\n");
 
+    char buffer[2048];
+    while (1) {
+        ssize_t len = recvfrom(sockfd, buffer, sizeof(buffer), 0, NULL, NULL);
+        if (len == -1) {
+            perror("recvfrom");
+            close(sockfd);
+            exit(EXIT_FAILURE);
+        }
+
+        printf("Received packet: %s\n", buffer);
     }
 
+    // Close the socket after sending and receiving frames
+    close(sockfd);
     return 0;
 }

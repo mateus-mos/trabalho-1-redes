@@ -2,20 +2,20 @@ VPATH = src:lib
 
 all: client server
 
-client: client.o ConexaoRawSocket.o
-	gcc -Wall obj/client.o obj/ConexaoRawSocket.o -o ./bin/client
+client: client.o socket.o
+	gcc -Wall obj/client.o obj/socket.o -o ./bin/client
 
-server: server.o ConexaoRawSocket.o
-	gcc -Wall obj/server.o obj/ConexaoRawSocket.o -o ./bin/server
+server: server.o socket.o
+	gcc -Wall obj/server.o obj/socket.o -o ./bin/server
 
-server.o: server.c  ConexaoRawSocket.o
+server.o: server.c  socket.o
 	gcc -c src/server.c -o obj/server.o
 
-client.o: client.c ConexaoRawSocket.c 
+client.o: client.c socket.c 
 	gcc -c src/client.c -o obj/client.o
 
-ConexaoRawSocket.o: ConexaoRawSocket.h
-	gcc -c src/ConexaoRawSocket.c -o obj/ConexaoRawSocket.o
+socket.o: socket.h
+	gcc -c src/socket.c -o obj/socket.o
 
 clean:
 	-rm -f ./obj/* ./bin/* 
