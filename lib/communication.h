@@ -22,10 +22,13 @@
 
 struct packet {
     uint8_t start_marker;
-    uint8_t size:6;
-    uint8_t sequence:4;
-    uint8_t type:4;
+    uint8_t size;
+    uint8_t sequence;
+    uint8_t type;
     uint8_t *data;
-    uint8_t parity[8];
+    //uint8_t parity[8];
 };
+
+struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data);
+
 #endif

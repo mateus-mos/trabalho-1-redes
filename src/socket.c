@@ -11,7 +11,7 @@
 #include "../lib/socket.h"
 
 
-int createSocket(char *device)
+int create_socket(char *device)
 {
   int sock;
   struct ifreq ir;
@@ -25,7 +25,7 @@ int createSocket(char *device)
   }
 
   memset(&ir, 0, sizeof(struct ifreq));  	/*dispositivo eth0*/
-  memcpy(ir.ifr_name, device, sizeof(device));
+  memcpy(ir.ifr_name, device, sizeof(&device));
   if (ioctl(sock, SIOCGIFINDEX, &ir) == -1) {
     printf("Erro no ioctl\n");
     exit(-1);

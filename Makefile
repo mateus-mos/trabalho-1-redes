@@ -1,23 +1,31 @@
 VPATH = src:lib
 OBJ_DIR := obj
 BIN_DIR := bin
+FLAGS := -Wall -Wextra -Werror -std=c99
+
 
 all: client server
 
-client: client.o socket.o
-		gcc -Wall obj/client.o obj/socket.o -o $(BIN_DIR)/client
+debug: FLAGS += -DDEBUG -g
+debug: all
 
-server: server.o socket.o
-		gcc -Wall obj/server.o obj/socket.o -o $(BIN_DIR)/server
+client: client.o socket.o communication.o
+		gcc $(FLAGS) obj/client.o obj/socket.o obj/communication.o -o $(BIN_DIR)/client
 
-server.o: server.c socket.o
-		gcc -c src/server.c -o obj/server.o
+server: server.o socket.o communication.o
+		gcc $(FLAGS) obj/server.o obj/socket.o obj/communication.o -o $(BIN_DIR)/server
 
-client.o: client.c socket.c | $(OBJ_DIR) $(BIN_DIR)
-		gcc -c src/client.c -o obj/client.o
+server.o: server.c
+		gcc $(FLAGS) -c src/server.c -o obj/server.o
+
+client.o: client.c | $(OBJ_DIR) $(BIN_DIR)
+		gcc $(FLAGS) -c src/client.c -o obj/client.o
 
 socket.o: socket.h
-		gcc -c src/socket.c -o obj/socket.o
+		gcc $(FLAGS) -c src/socket.c -o obj/socket.o
+
+communication.o: communication.h
+		gcc $(FLAGS) -c src/communication.c -o obj/communication.o
 
 $(OBJ_DIR) $(BIN_DIR):
 		mkdir -p $@

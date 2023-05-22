@@ -2,6 +2,6 @@
 #define CONEXAO_RAW_SOCKET_H
 
 /* Return an open raw socket */
-int createSocket(char *device);
+int create_socket(char *device);
 
 #endif // CONEXAO_RAW_SOCKET_H 
