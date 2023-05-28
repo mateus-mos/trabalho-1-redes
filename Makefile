@@ -9,8 +9,8 @@ all: client server
 debug: FLAGS += -DDEBUG -g
 debug: all
 
-client: client.o socket.o communication.o
-		gcc $(FLAGS) obj/client.o obj/socket.o obj/communication.o -o $(BIN_DIR)/client
+client: client.o socket.o communication.o backup.o
+		gcc $(FLAGS) obj/backup.o obj/client.o obj/socket.o obj/communication.o -o $(BIN_DIR)/client
 
 server: server.o socket.o communication.o
 		gcc $(FLAGS) obj/server.o obj/socket.o obj/communication.o -o $(BIN_DIR)/server
@@ -26,6 +26,9 @@ socket.o: socket.h
 
 communication.o: communication.h
 		gcc $(FLAGS) -c src/communication.c -o obj/communication.o
+
+backup.o: backup.h
+		gcc $(FLAGS) -c src/backup.c -o obj/backup.o
 
 $(OBJ_DIR) $(BIN_DIR):
 		mkdir -p $@

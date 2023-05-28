@@ -20,6 +20,7 @@ int main() {
     printf("Creating socket...\n");
     int sockfd = create_socket("lo");
     printf("Socket created!\n");
+    printf("Waiting for client...\n");
 
     uint8_t buffer[2048];
     while (1) {
@@ -30,17 +31,12 @@ int main() {
             exit(EXIT_FAILURE);
         }
 
-        if(buffer[0] == START_MARKER){
-            printf("Received a packet from client!\n");
+        if(is_a_valid_packet(buffer)){
+            printf("\nReceived a packet from client!\n");
             printf("Packet size: %d\n", buffer[1]);
             printf("Packet type: %d\n", buffer[3]);
+            printf("Packet data: %s\n\n", &buffer[4]);
         }
-        else{
-            printf("This is not a packet from client!\n");
-            printf("buffer[0]: %d\n", buffer[0]);
-            printf("START_MARKER: %d\n", START_MARKER);
-        }
-        printf("\n");
     }
 
     // Close the socket after sending and receiving frames

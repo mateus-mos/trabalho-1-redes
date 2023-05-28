@@ -1,7 +1,5 @@
 #ifndef COMMUNICATION_H 
 #define COMMUNICATION_H 
-#include <stdint.h>
-
 #define START_MARKER 0x7E
 
 /* Protocol type codes */
@@ -25,10 +23,16 @@ struct packet {
     uint8_t size;
     uint8_t sequence;
     uint8_t type;
-    uint8_t *data;
+    uint8_t data[256];
     //uint8_t parity[8];
 };
 
 struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data);
+
+void change_packet(struct packet *p, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data);
+
+int is_a_valid_packet(uint8_t *buffer);
+
+void destroy_packet(struct packet *p);
 
 #endif
