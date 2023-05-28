@@ -22,7 +22,8 @@ int main() {
     printf("Socket created!\n");
     printf("Waiting for client...\n");
 
-    uint8_t buffer[2048];
+    uint8_t buffer[300];
+    struct packet *p = create_packet(0, 0, PT_ACK, NULL);
     while (1) {
         ssize_t len = recvfrom(sockfd, buffer, sizeof(buffer), 0, NULL, NULL);
         if (len == -1) {
@@ -32,10 +33,11 @@ int main() {
         }
 
         if(is_a_valid_packet(buffer)){
-            printf("\nReceived a packet from client!\n");
-            printf("Packet size: %d\n", buffer[1]);
-            printf("Packet type: %d\n", buffer[3]);
-            printf("Packet data: %s\n\n", &buffer[4]);
+            //send_packet(sockfd, p);
+            //printf("\nReceived a packet from client!\n");
+            //printf("Packet size: %d\n", buffer[1]);
+            //printf("Packet type: %d\n", buffer[3]);
+            //printf("Packet data: %s\n\n", &buffer[4]);
         }
     }
 

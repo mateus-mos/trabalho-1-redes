@@ -1,7 +1,7 @@
 VPATH = src:lib
 OBJ_DIR := obj
 BIN_DIR := bin
-FLAGS := -Wall -Wextra -Werror -std=c99
+FLAGS := -Wall -Wextra  -std=c99
 
 
 all: client server

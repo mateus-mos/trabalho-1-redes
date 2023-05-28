@@ -17,14 +17,17 @@ void backup_single_file(const char *src_path, int socket) {
         exit(EXIT_FAILURE);
     }
 
-    struct packet *p = create_packet(0, 0, 0, 0);
+    struct packet *p = create_packet(8, 0, PT_BACKUP_ONE_FILE, NULL);
 
     printf("Sending file...\n\n\n");
     uint8_t buffer;
+    uint8_t buffer_pct[300];
+    int packet_sequence = 0;
     while(fread(&buffer, 1, 1, file) > 0) {
-        printf("%c", buffer);
-        //send_packet(socket, p);
-        //destroy_packet(p);
+        change_packet(p, 8, packet_sequence, PT_DATA, &buffer);
+        send_packet(socket, p);
+        listen_response(buffer_pct, PT_ACK, socket);
+        packet_sequence++;
     }
     printf("\n\n\nFile sent!\n");
     printf("socket: %d\n", socket);

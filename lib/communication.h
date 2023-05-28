@@ -18,6 +18,8 @@
 #define PT_ACK 0xD
 #define PT_NACK 0xE
 
+#define PT_TIMEOUT 3 //seconds
+
 struct packet {
     uint8_t start_marker;
     uint8_t size;
@@ -32,6 +34,9 @@ struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8
 void change_packet(struct packet *p, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data);
 
 int is_a_valid_packet(uint8_t *buffer);
+
+int send_packet(int socket, struct packet *p);
+int listen_response(uint8_t *buffer, uint8_t type, int socket);
 
 void destroy_packet(struct packet *p);
 
