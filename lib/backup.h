@@ -1,7 +1,7 @@
 #ifndef BACKUP_H
 #define BACKUP_H
 
-void backup_single_file(const char *src_path, int socket);
+int backup_single_file(const char *src_path, int socket);
 void backup_multiple_files(const char *src_dir, int socket);
 void restore_single_file(const char *src_path, int socke);
 void restore_multiple_files(const char *src_dir, int socket);

@@ -64,12 +64,12 @@ void change_packet(struct packet *p, uint8_t size, uint8_t sequence, uint8_t typ
     if(p == NULL) {
         perror("packet is NULL");
         exit(EXIT_FAILURE);
-    }
+    } 
 
     p->size = size;
     p->sequence = sequence;
     p->type = type;
-    memcpy(p->data, data, p->size);
+    memcpy(p->data, data, size);
 }
 
 /* 
@@ -103,7 +103,7 @@ struct packet *parse_packet_from_buffer(struct packet *p, uint8_t *buffer){
 }
 
 int send_packet(int socket, struct packet *p){
-    if(send(socket, p, sizeof(struct packet) + p->size, 0) == -1) {
+    if(send(socket, p, sizeof(struct packet), 0) == -1) {
         perror("sendto");
         close(socket);
         exit(EXIT_FAILURE);
@@ -114,7 +114,7 @@ int send_packet(int socket, struct packet *p){
 }
 
 
-int listen_response(uint8_t *buffer, uint8_t type, int socket){
+int listen_response(struct packet *buffer, uint8_t type, int socket){
     int response_received = 0;
 
     printf("Waiting for response...\n");
@@ -127,43 +127,23 @@ int listen_response(uint8_t *buffer, uint8_t type, int socket){
     timeout.tv_sec = PT_TIMEOUT;
     timeout.tv_usec = 0;
 
-    int ready = select(socket , &read_fds, NULL, NULL, &timeout);
-    if (ready == -1) {
-        perror("select");
-        return -1;
-    } else if (ready == 0) {
-        printf("Timeout expired!\n");
-        return 0; // Timeout
-    } else {
-        ssize_t bytes_received = recvfrom(socket, buffer, sizeof(buffer), 0, NULL, NULL);
-        if (bytes_received == -1) {
-            perror("recvfrom");
+    /* Fix timeout */
+    while(buffer->type != type){
+        int ready = select(socket + 1, &read_fds, NULL, NULL, &timeout);
+        if (ready == -1) {
+            perror("select");
             return -1;
+        } else if (ready == 0) {
+            printf("Timeout expired!\n");
+            return -1; // Timeout
+        } else {
+            ssize_t bytes_received = recvfrom(socket, buffer, sizeof(buffer), 0, NULL, NULL);
+            if (bytes_received == -1) {
+                perror("recvfrom");
+                return -1;
+            }
         }
-        buffer[bytes_received] = '\0';
-        return bytes_received;
     }
-
-    //while(response_received == 0 && timeout_over(start_time) == 0 ){
-    //    ssize_t len = recvfrom(socket, buffer, sizeof(buffer), 0, NULL, NULL);
-
-    //    if (len == -1) {
-    //        perror("recvfrom");
-    //        return 1;
-    //    }
-
-    //    if(is_a_valid_packet(buffer)){
-    //        if(buffer[3] == type){
-    //            response_received = 1;
-    //            printf("ACK received!\n");
-    //        } 
-    //    }
-    //}
-
-    //if(response_received == 0){
-    //    printf("Timeout!\n");
-    //    return 1;
-    //}
 
     return 0;
 }

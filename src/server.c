@@ -33,8 +33,8 @@ int main() {
         }
 
         if(is_a_valid_packet(buffer)){
-            //send_packet(sockfd, p);
-            //printf("\nReceived a packet from client!\n");
+            send_packet(sockfd, p);
+            printf("\nReceived a packet from client!\n");
             //printf("Packet size: %d\n", buffer[1]);
             //printf("Packet type: %d\n", buffer[3]);
             //printf("Packet data: %s\n\n", &buffer[4]);

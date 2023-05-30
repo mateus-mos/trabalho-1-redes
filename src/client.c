@@ -23,33 +23,31 @@ int main() {
     int sockfd = create_socket("lo");
     printf("Socket created!\n");
 
+    /* Printar um terminal */
+    /* Receber input de um comando */
+    /* Executar um comando */
+    /* Esperar outro comando*/
+
+    /* Comandos:
+     * backup <file>
+     * backup <dir>
+     * restore <file>
+     * restore <dir>
+     * set_server_dir <dir>
+     * cd_local <dir>
+     * verify_file_md5 <file>
+     * exit
+    */
+   /* Printar erros:
+    * Digitar comando errado
+    * Arquivo não existe
+    * Diretório não existe
+    * Diretório não pode ser acessado
+    * Servidor indisponível
+   */
+
     backup_single_file("/home/mateus/Documents/BCC/trabalho-1-redes/helloworld.txt", sockfd);
 
-
-
-
-   // uint8_t data[] = {'h', 'e', 'l', 'l', 'o', 'w', 'o', 'r', 'l', 'd', 'k'};
-
-   // struct packet *p = create_packet(sizeof(data), 0, PT_BACKUP_FILES, data);
-
-   // if(send(sockfd, p, sizeof(struct packet) + sizeof(data), 0) == -1) {
-   //     perror("sendto");
-   //     close(sockfd);
-   //     exit(EXIT_FAILURE);
-   // } 
-
-   // printf("Sent packet!");
-
-   // uint8_t data2[] = {'h', 'e', 'l', 'l', 'o', 'w', 'o', 'r', 'l', 'd', '2'};
-
-   // change_packet(p, sizeof(data2), 1, PT_ACK, data2);
-
-   // if(send(sockfd, p, sizeof(struct packet) + sizeof(data2), 0) == -1) {
-   //     perror("sendto");
-   //     close(sockfd);
-   //     exit(EXIT_FAILURE);
-   // } 
-    // Close the socket after sending and receiving frames
     close(sockfd);
 
     return 0;

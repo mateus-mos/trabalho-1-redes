@@ -4,7 +4,15 @@
 #include "../lib/backup.h"
 #include "../lib/communication.h"
 
-void backup_single_file(const char *src_path, int socket) {
+/*
+ * Sends a single file to the server. 
+ * 
+ * @param src_path The path of the file to be sent.
+ * @param socket The socket to send the file.
+ * @return 0 if the file was sent successfully, -1 otherwise.
+ *  
+*/
+int backup_single_file(const char *src_path, int socket) {
     if(src_path == NULL) {
         perror("src_path is NULL");
         exit(EXIT_FAILURE);
@@ -18,17 +26,22 @@ void backup_single_file(const char *src_path, int socket) {
     }
 
     struct packet *p = create_packet(8, 0, PT_BACKUP_ONE_FILE, NULL);
+    
+    /* Send packet and wait for reponse */
 
     printf("Sending file...\n\n\n");
     uint8_t buffer;
-    uint8_t buffer_pct[300];
-    int packet_sequence = 0;
+    int packet_sequence = 1;
     while(fread(&buffer, 1, 1, file) > 0) {
+        /* Check if exist enough bytes */
         change_packet(p, 8, packet_sequence, PT_DATA, &buffer);
         send_packet(socket, p);
-        listen_response(buffer_pct, PT_ACK, socket);
+        if(listen_response(p, PT_ACK, socket) == 0)
+            printf("ACK received!\n");
         packet_sequence++;
     }
+
+    /* Send end packet */
     printf("\n\n\nFile sent!\n");
     printf("socket: %d\n", socket);
 
@@ -36,7 +49,15 @@ void backup_single_file(const char *src_path, int socket) {
     destroy_packet(p);
 }
 
-//void backup_multiple_files(const char *src_dir, int socket) {
+/*
+ * Sends multiple files to the server.
+ * 
+ * @param src_dir The path of the directory containing the files to be sent.
+ * @param socket The socket to send the files.
+ * @return 0 if the files were sent successfully, -1 otherwise.
+ * 
+*/
+//int backup_multiple_files(const char *src_dir, int socket) {
 //}
 //
 //void restore_single_file(const char *src_path, int socket) {
