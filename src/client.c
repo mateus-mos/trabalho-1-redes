@@ -19,10 +19,32 @@
 #define PORT 27015
 
 int main() {
+        
     printf("Creating socket...\n");
     int sockfd = create_socket("lo");
     printf("Socket created!\n");
 
+    // char command[100];
+    // printf("---------- Client Terminal ----------\n");
+    // printf("$: ");
+    // scanf("%99s", command);
+    
+    // while (strcmp(command, "exit")){
+    //     if(!strcmp(command,"cd")){
+            
+    //     } else if (!strcmp(command,"backup")){
+            
+    //     } else if (!strcmp(command,"restore")){
+            
+    //     } else if(!strcmp(command,"set server dir")){
+            
+    //     }
+
+    //     printf("$: ");
+    //     scanf("%99s", command);
+
+    // }
+    
     /* Printar um terminal */
     /* Receber input de um comando */
     /* Executar um comando */
