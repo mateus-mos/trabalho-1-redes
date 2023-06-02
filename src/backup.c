@@ -25,7 +25,10 @@ int backup_single_file(const char *src_path, int socket) {
         exit(EXIT_FAILURE);
     }
 
-    struct packet *p = create_packet(8, 0, PT_BACKUP_ONE_FILE, NULL);
+    struct packet *p = create_packet(0, 0, PT_BACKUP_ONE_FILE, NULL);
+
+    send_packet(socket, p);
+    listen_packet(p, PT_TIMEOUT, socket);
     
     /* Send packet and wait for reponse */
 
@@ -37,7 +40,7 @@ int backup_single_file(const char *src_path, int socket) {
         /* Check if exist enough bytes */
         change_packet(p, 8, packet_sequence, PT_DATA, &buffer);
         send_packet(socket, p);
-        if(listen_response(p, PT_ACK, socket) == 0)
+        if(listen_packet(p, PT_ACK, socket) == 0)
             printf("ACK received!\n");
         packet_sequence++;
     }
@@ -48,6 +51,14 @@ int backup_single_file(const char *src_path, int socket) {
 
     fclose(file);
     destroy_packet(p);
+}
+
+int receive_file(char file_name, int socket){
+    /* Open a file to write the bytes */
+
+    /* Receive packtes */
+
+
 }
 
 /*

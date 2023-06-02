@@ -123,48 +123,50 @@ int send_packet(int socket, struct packet *p){
  * @param type The type of the packet to be listened.
  * @param socket The socket to be listened.
  * 
- * @return 0 if the packet was received, -1 if not.
+ * @return 0 if the packet was received.
+ * @return -1 if an error occurred. 
+ * @return -2 if the timeout expired.
+ * 
 */
-int listen_response(struct packet *buffer, uint8_t type, int socket){
-    int response_received = 0;
-
-    printf("Waiting for response...\n");
-
+int listen_packet(struct packet *buffer, int timeout, int socket){
     fd_set read_fds;
     FD_ZERO(&read_fds);
     FD_SET(socket, &read_fds);
 
-    struct timeval timeout;
-    timeout.tv_usec = 0;
+    struct timeval t_out;
+    t_out.tv_usec = 0;
 
     clock_t start = clock();
     clock_t now = clock();
     
-    while(time_passed(start, now) < PT_TIMEOUT && buffer->type != type){
-        timeout.tv_sec = PT_TIMEOUT - time_passed(start, now);
+    /* The timeout needs to be checked in the while loop
+     * because other packets that it's not the one we want
+    * can be received (packets that isn't comming from client). 
+    */
+    while(time_passed(start, now) < timeout){
+        t_out.tv_sec = timeout - time_passed(start, now);
 
-        int ready = select(socket + 1, &read_fds, NULL, NULL, &timeout);
+        int ready = select(socket + 1, &read_fds, NULL, NULL, &t_out);
         if (ready == -1) {
             perror("select");
             return -1;
         } else if (ready == 0) {
             printf("Timeout expired!\n");
-            return -1; // Timeout
+            return -2; // Timeout
         } else {
             ssize_t bytes_received = recvfrom(socket, buffer, sizeof(buffer), 0, NULL, NULL);
             if (bytes_received == -1) {
                 perror("recvfrom");
                 return -1;
             }
+            /* Checks if the packet is from client. */ 
+            if(is_a_valid_packet(buffer))
+                return 0;
         }
+        now = clock();
     }
 
-    if(time_passed(start, now) >= PT_TIMEOUT){
-        printf("Timeout expired!\n");
-        return -1;
-    }
-
-    return 0;
+    return -2;
 }
 
 /* 

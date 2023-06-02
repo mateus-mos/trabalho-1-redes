@@ -36,7 +36,7 @@ void change_packet(struct packet *p, uint8_t size, uint8_t sequence, uint8_t typ
 int is_a_valid_packet(struct packet *p);
 
 int send_packet(int socket, struct packet *p);
-int listen_response(struct packet *buffer, uint8_t type, int socket);
+int listen_packet(struct packet *buffer, int timeout, int socket);
 
 void destroy_packet(struct packet *p);
 

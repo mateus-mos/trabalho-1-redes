@@ -28,32 +28,49 @@ int main() {
     int ignore = 1;
 
     while (1) {
-        ssize_t len = recvfrom(sockfd, &buffer, sizeof(buffer), 0, NULL, NULL);
-        if (len == -1) {
-            perror("recvfrom");
-            close(sockfd);
-            exit(EXIT_FAILURE);
-        }
-
+        listen_packet(&buffer, 9999, sockfd);
 
         /* The "ignore" variable is used to ignore duplicated packets.
          * Remove this "if" when change the interface.
          */
-        if(ignore == 1 && is_a_valid_packet(&buffer)){
+        if(ignore == 1){
             /* The above "if" ignore packets that server sent.
              * This occurs only in the "loopback" interface. 
              * Remove this "if" when change the interface.
              */
             if(memcmp(&buffer, p, sizeof(struct packet)) != 0){
-                printf("Packet received: %d\n", packets_received);
-                send_packet(sockfd, p);
-                packets_received++;
+                switch(buffer.type){
+                    case PT_ACK:
+                        printf("ACK received: %d\n", buffer.type);
+                        break;
+                    case PT_DATA:
+                        printf("DATA received: %d\n", buffer.type);
+                        send_packet(sockfd, p); // Send ACK
+                        break;
+                    case PT_NACK:
+                        printf("NACK received: %d\n", buffer.type);
+                        break;
+                    case PT_BACKUP_ONE_FILE:
+                        printf("BACKUP_ONE_FILE received: %d\n", buffer.type);
+                        send_packet(sockfd, p); // Send ACK
+                        break;
+                    case PT_BACKUP_FILES:
+                        printf("BACKUP_FILES received: %d\n", buffer.type);
+                        break;
+                    default:
+                        printf("Invalid packet received!\n");
+                        break;
+                }
+                //printf("Packet received: %d\n", packets_received);
+                //send_packet(sockfd, p);
+                //packets_received++;
             }
             ignore *= -1;
         } else if(ignore == -1 && is_a_valid_packet(&buffer)){
             ignore *= -1;
         }
         
+        // Reset the buffer
         buffer.start_marker = 0;
     }
 
