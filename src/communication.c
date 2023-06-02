@@ -33,10 +33,19 @@ double time_passed(clock_t start, clock_t end);
  * @see change_packet_data
 */
 struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data){
-    struct packet *p = malloc(sizeof(struct packet));
+    
+    /* Verify Limits*/
+    if((size > MAX_SIZE) || (sequence > MAX_SEQUENCE))
+    {
+        perror("Invalid packet!");
+        return NULL;
+    } 
+
+    struct packet *p;
+    p = malloc(sizeof(struct packet));
 
     if(p == NULL) {
-        perror("malloc");
+        perror("Malloc failed!");
         exit(EXIT_FAILURE);
     }
 
@@ -44,6 +53,7 @@ struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8
     p->size = size;
     p->sequence = sequence;
     p->type = type;
+    
     if(data != NULL)
         memcpy(&p->data, data, size);
 
