@@ -15,8 +15,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/time.h>
+#include <time.h>
 #include "../lib/communication.h"
 
+double time_passed(clock_t start, clock_t end);
 
 /* 
  * Creates a packet with the given parameters.
@@ -114,6 +116,15 @@ int send_packet(int socket, struct packet *p){
 }
 
 
+/* 
+ * Listens for a packet of a given type.
+ * 
+ * @param buffer The buffer to be filled.
+ * @param type The type of the packet to be listened.
+ * @param socket The socket to be listened.
+ * 
+ * @return 0 if the packet was received, -1 if not.
+*/
 int listen_response(struct packet *buffer, uint8_t type, int socket){
     int response_received = 0;
 
@@ -124,11 +135,14 @@ int listen_response(struct packet *buffer, uint8_t type, int socket){
     FD_SET(socket, &read_fds);
 
     struct timeval timeout;
-    timeout.tv_sec = PT_TIMEOUT;
     timeout.tv_usec = 0;
 
-    /* Fix timeout */
-    while(buffer->type != type){
+    clock_t start = clock();
+    clock_t now = clock();
+    
+    while(time_passed(start, now) < PT_TIMEOUT && buffer->type != type){
+        timeout.tv_sec = PT_TIMEOUT - time_passed(start, now);
+
         int ready = select(socket + 1, &read_fds, NULL, NULL, &timeout);
         if (ready == -1) {
             perror("select");
@@ -145,6 +159,11 @@ int listen_response(struct packet *buffer, uint8_t type, int socket){
         }
     }
 
+    if(time_passed(start, now) >= PT_TIMEOUT){
+        printf("Timeout expired!\n");
+        return -1;
+    }
+
     return 0;
 }
 
@@ -153,9 +172,13 @@ int listen_response(struct packet *buffer, uint8_t type, int socket){
  * 
  * @param p The packet to be checked.
 */
-int is_a_valid_packet(uint8_t *buffer){
-    if(buffer[0] != START_MARKER){
+int is_a_valid_packet(struct packet *p){
+    if(p->start_marker != START_MARKER){
         return 0;
     }
     return 1;
+}
+
+double time_passed(clock_t start, clock_t end){
+    return ((double)(end - start) / CLOCKS_PER_SEC);
 }

@@ -32,6 +32,7 @@ int backup_single_file(const char *src_path, int socket) {
     printf("Sending file...\n\n\n");
     uint8_t buffer;
     int packet_sequence = 1;
+
     while(fread(&buffer, 1, 1, file) > 0) {
         /* Check if exist enough bytes */
         change_packet(p, 8, packet_sequence, PT_DATA, &buffer);
