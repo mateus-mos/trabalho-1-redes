@@ -12,7 +12,7 @@ Protocolo das mensagens (baseado no Kermit)
 
 | Tipo 	|          Descriçao          	|
 |:----:	|:---------------------------:	|
-| 0000 	|        Back 1 arquivo       	|
+| 0000 	|      Backup de 1 arquivo  	  |
 | 0001 	|  Backup mais de um arquivo  	|
 | 0010 	|      Recupera 1 arquivo     	|
 | 0011 	| Recupera mais de um arquivo 	|
@@ -22,7 +22,7 @@ Protocolo das mensagens (baseado no Kermit)
 | 0111 	|             MD5             	|
 | 1000 	|            Dados            	|
 | 1001 	|         Fim arquivo         	|
-| 1010 	|     Frim grupo arquivos     	|
+| 1010 	|      Fim grupo arquivos     	|
 | 1011 	|                             	|
 | 1100 	|             Erro            	|
 | 1101 	|              OK             	|
