@@ -21,7 +21,8 @@
 #define PT_TIMEOUT 3 //seconds
 
 #define MAX_SIZE 63
-#define MAX_SEQUENCE 15
+#define MAX_SEQUENCE 63
+#define MAX_TYPE 15
 
 struct packet {
     uint8_t start_marker;

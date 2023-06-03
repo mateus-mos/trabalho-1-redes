@@ -35,7 +35,7 @@ double time_passed(clock_t start, clock_t end);
 struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data){
     
     /* Verify Limits*/
-    if((size > MAX_SIZE) || (sequence > MAX_SEQUENCE))
+    if((size > MAX_SIZE) || (sequence > MAX_SEQUENCE) || (type > MAX_TYPE))
     {
         perror("Invalid packet!");
         return NULL;
