@@ -49,30 +49,15 @@ int backup_single_file(const char *src_path, int socket) {
 
     struct packet *p = create_packet(0, 0, PT_BACKUP_ONE_FILE, NULL);
 
-    send_packet_and_wait_ack(socket, p);
     /* Send packet for start backup single file */
-    send_packet(socket, p);
-    listen_packet(p, PT_TIMEOUT, socket);
-
-    int listen_response = listen_packet(p, PT_TIMEOUT, socket);
-
-    if(listen_response == -2) 
-    {
-        printf("Timeout while send single file!\n");
-        return -1;
-    } 
-    else if(listen_response == -1) 
-    {
-        printf("Error while send single file!\n");
+    if(send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0){
+        printf("Error while trying to reach server!\n");
         return -1;
     }
-
 
     uint8_t data_buffer[63];
     struct packet p_buffer;
 
-    int ACK_received = 0;
-    int packet_sequence = 1;
 
     int file_read_bytes = MAX_DATA_SIZE;
     long long file_size = get_file_size(src_path);
@@ -83,6 +68,7 @@ int backup_single_file(const char *src_path, int socket) {
     printf("Packets quantity: %d\n", packets_quantity);
     printf("File size: %lld\n", file_size);
 
+    int packet_sequence = 1;
     for(int i = 0; i < packets_quantity; i++) 
     {
         printf("\rSending packets [%d/%d]...", i+1, packets_quantity);
@@ -95,31 +81,18 @@ int backup_single_file(const char *src_path, int socket) {
         /* Read bytes from file. */
         fread(data_buffer, file_read_bytes, 1, file);
 
-        /* Change packet data. */
+        /* Put read data into packet. */ 
         change_packet(p, file_read_bytes, packet_sequence, PT_DATA, data_buffer);
 
-        while(ACK_received == 0){
-            send_packet(socket, p);
-
-            listen_packet(&p_buffer, PT_TIMEOUT, socket); // listen its own packet (LOOPBACK)
-            listen_response = listen_packet(&p_buffer, PT_TIMEOUT, socket);
-
-            if(listen_response == -2) 
-            {
-                printf("\nTimeout while send single file!\n");
-                return -1;
-            } 
-            else if(listen_response == -1) 
-            {
-                printf("\nError while send single file!\n");
-                return -1;
-            }
-
-            if(p_buffer.type == PT_ACK)
-                ACK_received = 1;
+        /* Send packet. */
+        if(send_packet_and_wait_for_response(p, &p_buffer, PT_TIMEOUT, socket) != 0) 
+        {
+            printf("Error while file: %s \n", src_path);
+            fclose(file);
+            destroy_packet(p);
+            return -1;
         }
-
-        ACK_received = 0;
+        
         if(packet_sequence == MAX_SEQUENCE)
             packet_sequence = 0;
         packet_sequence++;

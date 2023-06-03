@@ -53,8 +53,6 @@ int main() {
                     case PT_BACKUP_ONE_FILE:
                         printf("BACKUP_ONE_FILE received: %d\n", buffer.type);
                         send_packet(sockfd, p); // Send ACK
-
-                        restore_one_file();
                         break;
                     case PT_BACKUP_FILES:
                         printf("BACKUP_FILES received: %d\n", buffer.type);

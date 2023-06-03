@@ -123,13 +123,34 @@ struct packet *parse_packet_from_buffer(struct packet *p, uint8_t *buffer){
     return p;
 }
 
-/*
+/* Sends a packet and waits for a ACK.
+ * If an NACK is received, the packet is sent again.
+ * 
+ * @param packet The packet to be sent. 
+ * @param response The response packet to be filled.
+ * @param timeout The timeout in seconds.
+ * @param socket The socket to be used.
+ * 
+ * @return 0 if the packet was sent and the response was received.
+ * @return -1 if an error occurred.
+ * @return -2 if the timeout expired.
+ * 
 */
-int send_packet_and_wait_for_response(struct packet *p, int timeout, struct packet *buffer, int socket){
-    send_packet(socket, p);
-    listen_packet(buffer, timeout, socket); // Remove later
+int send_packet_and_wait_for_response(struct packet *packet, struct packet *response, int timeout, int socket){
+    response->type = PT_NACK;
+    while(response->type == PT_NACK){
+        send_packet(socket, packet);
 
-    return listen_packet(buffer, timeout, socket);
+        listen_packet(response, PT_TIMEOUT, socket); // listen its own packet (LOOPBACK)
+        int listen_response = listen_packet(response, PT_TIMEOUT, socket);
+
+        if(listen_response == -2) 
+            return -2;
+        else if(listen_response == -1) 
+            return -1;
+    }
+
+    return 0;
 }
 
 int send_packet(int socket, struct packet *p){
