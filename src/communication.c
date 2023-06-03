@@ -19,6 +19,7 @@
 #include "../lib/communication.h"
 
 double time_passed(clock_t start, clock_t end);
+void shift_bits(struct packet *packet);
 
 /* 
  * Creates a packet with the given parameters.
@@ -137,31 +138,61 @@ struct packet *parse_packet_from_buffer(struct packet *p, uint8_t *buffer){
  * 
 */
 int send_packet_and_wait_for_response(struct packet *packet, struct packet *response, int timeout, int socket){
-    response->type = PT_NACK;
-    while(response->type == PT_NACK){
+    int ACK_received = 0;
+    while(!ACK_received){
         send_packet(socket, packet);
 
-        listen_packet(response, PT_TIMEOUT, socket); // listen its own packet (LOOPBACK)
-        int listen_response = listen_packet(response, PT_TIMEOUT, socket);
+        listen_packet(response, timeout, socket); // listen its own packet (LOOPBACK)
+        int listen_response = listen_packet(response, timeout, socket);
 
         if(listen_response == -2) 
             return -2;
         else if(listen_response == -1) 
             return -1;
+        if(response->type == PT_ACK)
+            ACK_received = 1;
     }
 
     return 0;
 }
 
-int send_packet(int socket, struct packet *p){
-    if(send(socket, p, sizeof(struct packet), 0) == -1) {
+int send_packet(int socket, struct packet *packet){
+    if(send(socket, packet, sizeof(struct packet), 0) == -1) {
         perror("sendto");
         close(socket);
         exit(EXIT_FAILURE);
     } 
+    //shift_bits(packet);
     return 0;
 }
 
+/* Shift bits function */
+//void shift_bits(struct packet *packet, )
+//{
+//    int packet_size = packet->size;
+//
+//    /* Shift sequence */
+//    uint8_t shifted= packet->sequence >> 6;
+//    packet->size = packet->size | shifted;
+//    packet->sequence = packet->sequence << 2;
+//
+//    /* Shift type */
+//    shifted = packet->type >> 2;
+//    packet->sequence = packet->sequence | shifted;
+//    packet->type = packet->type << 6;
+//
+//
+//}
+
+/* unshift bits */
+void unshift_bits(struct packet *packet)
+{
+    packet->sequence = packet->sequence >> 2;
+    int packet_size = packet->size;
+    packet->type = packet->type >> 6;
+    for(int i = 0; i < packet_size; i++)
+        packet->data[i] = packet->data[i] >> 12;
+}
 
 /* 
  * Listens for a packet of a given type.

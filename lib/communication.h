@@ -29,8 +29,8 @@ struct packet {
     uint8_t size; // 6 bits => 2^6 - 1 = 63 
     uint8_t sequence; // 4 bits => 2^4 - 1 = 15 
     uint8_t type; // 4 bits => 2^4 - 1 = 15
+    //uint8_t parity; // 1 byte for parity
     uint8_t data[63]; // Max length of data is 63 bytes
-    //uint8_t parity; // 8 bytes for parity
 };
 
 struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data);
