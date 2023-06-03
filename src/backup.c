@@ -76,7 +76,7 @@ int backup_single_file(const char *src_path, int socket) {
 
         /* Change length for the last packet. */
         if(i == packets_quantity - 1)
-            file_read_bytes = file_size % 63;
+            file_read_bytes = file_size % MAX_DATA_SIZE;
 
         /* Read bytes from file. */
         fread(data_buffer, file_read_bytes, 1, file);
@@ -105,15 +105,30 @@ int backup_single_file(const char *src_path, int socket) {
 }
 
 int receive_file(char file_name, int socket){
+    
     /* Create a file with "file_name" */
+    FILE *file;
+
+    file = fopen(file_name, "w"); // To do: verify mode
+
+    if (file == NULL) {
+        printf("Error opening the file.\n");
+        return 1;
+    }
 
     /* Flag PT_DATA */
+    struct packet *p = create_packet(0, 0, PT_DATA, NULL);
+
+    // fprintf(file, "content\n");
+
     /* Read the packets from socket and concatenate into "file_name" */
     /* Send ACK */
     /* If parity is wrong send NACK */
     /* Until receive END packet. */
     /* Flag END_FILE */
 
+    fclose(file);
+    /* End */
 }
 
 /*
