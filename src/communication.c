@@ -35,7 +35,7 @@ double time_passed(clock_t start, clock_t end);
 struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data){
     
     /* Verify Limits*/
-    if((size > MAX_SIZE) || (sequence > MAX_SEQUENCE) || (type > MAX_TYPE))
+    if((size > MAX_DATA_SIZE) || (sequence > MAX_SEQUENCE) || (type > MAX_TYPE))
     {
         perror("Invalid packet!");
         return NULL;
@@ -72,7 +72,14 @@ struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8
  * @see create_packet
  * @see destroy_packet
 */
-void change_packet(struct packet *p, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data){
+struct packet *change_packet(struct packet *p, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data){
+    /* Verify Limits*/
+    if((size > MAX_DATA_SIZE) || (sequence > MAX_SEQUENCE) || (type > MAX_TYPE))
+    {
+        perror("Invalid packet!");
+        return NULL;
+    } 
+
     if(p == NULL) {
         perror("packet is NULL");
         exit(EXIT_FAILURE);
@@ -82,6 +89,8 @@ void change_packet(struct packet *p, uint8_t size, uint8_t sequence, uint8_t typ
     p->sequence = sequence;
     p->type = type;
     memcpy(p->data, data, size);
+
+    return p;
 }
 
 /* 
@@ -120,8 +129,6 @@ int send_packet(int socket, struct packet *p){
         close(socket);
         exit(EXIT_FAILURE);
     } 
-    printf("Packet sent!\n");
-
     return 0;
 }
 
@@ -130,7 +137,7 @@ int send_packet(int socket, struct packet *p){
  * Listens for a packet of a given type.
  * 
  * @param buffer The buffer to be filled.
- * @param type The type of the packet to be listened.
+ * @param timeout The timeout in seconds. 
  * @param socket The socket to be listened.
  * 
  * @return 0 if the packet was received.
@@ -158,15 +165,12 @@ int listen_packet(struct packet *buffer, int timeout, int socket){
 
         int ready = select(socket + 1, &read_fds, NULL, NULL, &t_out);
         if (ready == -1) {
-            perror("select");
             return -1;
         } else if (ready == 0) {
-            printf("Timeout expired!\n");
             return -2; // Timeout
         } else {
             ssize_t bytes_received = recvfrom(socket, buffer, sizeof(buffer), 0, NULL, NULL);
             if (bytes_received == -1) {
-                perror("recvfrom");
                 return -1;
             }
             /* Checks if the packet is from client. */ 

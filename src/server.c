@@ -24,7 +24,7 @@ int main() {
 
     struct packet buffer;
     struct packet *p = create_packet(0, 0, PT_ACK, NULL);
-    int packets_received = 0;
+    //int packets_received = 0;
     int ignore = 1;
 
     while (1) {

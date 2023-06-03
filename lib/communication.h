@@ -17,17 +17,17 @@
 #define PT_ERROR 0xC
 #define PT_ACK 0xD
 #define PT_NACK 0xE
-
 #define PT_TIMEOUT 3 //seconds
 
-#define MAX_SIZE 63
-#define MAX_SEQUENCE 63
+#define MAX_PACKET_SIZE 72
+#define MAX_DATA_SIZE 63
+#define MAX_SEQUENCE 15 
 #define MAX_TYPE 15
 
 struct packet {
     uint8_t start_marker;
     uint8_t size; // 6 bits => 2^6 - 1 = 63 
-    uint8_t sequence; // 6 bits => 2^6 - 1 = 63
+    uint8_t sequence; // 4 bits => 2^4 - 1 = 15 
     uint8_t type; // 4 bits => 2^4 - 1 = 15
     uint8_t data[63]; // Max length of data is 63 bytes
     //uint8_t parity; // 8 bytes for parity
@@ -35,7 +35,7 @@ struct packet {
 
 struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data);
 
-void change_packet(struct packet *p, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data);
+struct packet *change_packet(struct packet *p, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data);
 
 int is_a_valid_packet(struct packet *p);
 

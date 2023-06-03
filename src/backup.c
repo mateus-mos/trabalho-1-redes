@@ -1,8 +1,24 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <math.h>
 #include "../lib/backup.h"
 #include "../lib/communication.h"
+
+
+/* Get the size of a file in bytes. 
+ * 
+ * @param path The path of the file.
+*/
+long long int get_file_size(const char *path) {
+    struct stat st;
+    if(stat(path, &st) == -1) {
+        perror("Could not get file size!");
+        return -1;
+    }
+    return st.st_size;
+}
 
 /*
  * Sends a single file to the server. 
@@ -14,52 +30,107 @@
 */
 int backup_single_file(const char *src_path, int socket) {
     if(src_path == NULL) {
-        perror("src_path is NULL");
-        exit(EXIT_FAILURE);
+        perror("src_path is NULL!");
+        return -1;
     }
 
     FILE *file = fopen(src_path, "rb");
 
     if(file == NULL) {
-        perror("fopen");
-        exit(EXIT_FAILURE);
+        perror("Could not open file!");
+        return -1;
     }
 
     struct packet *p = create_packet(0, 0, PT_BACKUP_ONE_FILE, NULL);
 
+    /* Send packet for start backup single file */
     send_packet(socket, p);
     listen_packet(p, PT_TIMEOUT, socket);
-    
-    /* Send packet and wait for reponse */
 
-    printf("Sending file...\n\n\n");
-    uint8_t buffer;
-    int packet_sequence = 1;
+    int listen_response = listen_packet(p, PT_TIMEOUT, socket);
 
-    while(fread(&buffer, 1, 1, file) > 0) {
-        /* Check if exist enough bytes */
-        change_packet(p, 8, packet_sequence, PT_DATA, &buffer);
-        send_packet(socket, p);
-        if(listen_packet(p, PT_ACK, socket) == 0)
-            printf("ACK received!\n");
-        packet_sequence++;
+    if(listen_response == -2) 
+    {
+        printf("Timeout while send single file!\n");
+        return -1;
+    } 
+    else if(listen_response == -1) 
+    {
+        printf("Error while send single file!\n");
+        return -1;
     }
 
-    /* Send end packet */
-    printf("\n\n\nFile sent!\n");
-    printf("socket: %d\n", socket);
+
+    uint8_t data_buffer[63];
+    struct packet p_buffer;
+
+    int ACK_received = 0;
+    int packet_sequence = 1;
+
+    int file_read_bytes = MAX_DATA_SIZE;
+    long long file_size = get_file_size(src_path);
+    int packets_quantity = ceil(file_size / (float)(MAX_DATA_SIZE));
+
+    printf("\n\n");
+    printf("Sending file: %s\n", src_path);
+    printf("Packets quantity: %d\n", packets_quantity);
+    printf("File size: %lld\n", file_size);
+
+    for(int i = 0; i < packets_quantity; i++) 
+    {
+        printf("\rSending packets [%d/%d]...", i+1, packets_quantity);
+        fflush(stdout);
+
+        /* Change length for the last packet. */
+        if(i == packets_quantity - 1)
+            file_read_bytes = file_size % 63;
+
+        /* Read bytes from file. */
+        fread(data_buffer, file_read_bytes, 1, file);
+
+        /* Change packet data. */
+        change_packet(p, file_read_bytes, packet_sequence, PT_DATA, data_buffer);
+
+        while(ACK_received == 0){
+            send_packet(socket, p);
+
+            listen_packet(&p_buffer, PT_TIMEOUT, socket); // listen its own packet (LOOPBACK)
+            listen_response = listen_packet(&p_buffer, PT_TIMEOUT, socket);
+
+            if(listen_response == -2) 
+            {
+                printf("\nTimeout while send single file!\n");
+                return -1;
+            } 
+            else if(listen_response == -1) 
+            {
+                printf("\nError while send single file!\n");
+                return -1;
+            }
+
+            if(p_buffer.type == PT_ACK)
+                ACK_received = 1;
+        }
+
+        ACK_received = 0;
+        if(packet_sequence == MAX_SEQUENCE)
+            packet_sequence = 0;
+        packet_sequence++;
+    }
+    printf("\nFile sent successfully!\n\n\n");
 
     fclose(file);
     destroy_packet(p);
+    return 0;
 }
 
-int receive_file(char file_name, int socket){
-    /* Open a file to write the bytes */
+//int receive_file(char file_name, int socket){
+    ///* Open a file to write the bytes */
 
-    /* Receive packtes */
+    ///* Receive packtes */
 
 
-}
+//}
 
 /*
  * Sends multiple files to the server.
