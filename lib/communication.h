@@ -39,6 +39,7 @@ struct packet *change_packet(struct packet *p, uint8_t size, uint8_t sequence, u
 
 int is_a_valid_packet(struct packet *p);
 
+int send_packet_and_wait_response(struct packet *p, int timeout, int socke);
 int send_packet(int socket, struct packet *p);
 int listen_packet(struct packet *buffer, int timeout, int socket);
 

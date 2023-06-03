@@ -123,6 +123,15 @@ struct packet *parse_packet_from_buffer(struct packet *p, uint8_t *buffer){
     return p;
 }
 
+/*
+*/
+int send_packet_and_wait_for_response(struct packet *p, int timeout, struct packet *buffer, int socket){
+    send_packet(socket, p);
+    listen_packet(buffer, timeout, socket); // Remove later
+
+    return listen_packet(buffer, timeout, socket);
+}
+
 int send_packet(int socket, struct packet *p){
     if(send(socket, p, sizeof(struct packet), 0) == -1) {
         perror("sendto");

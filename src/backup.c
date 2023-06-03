@@ -21,6 +21,12 @@ long long int get_file_size(const char *path) {
 }
 
 /*
+ * Send the file data to the server.
+*/
+void send_file_data(){
+}
+
+/*
  * Sends a single file to the server. 
  * 
  * @param src_path The path of the file to be sent.
@@ -43,6 +49,7 @@ int backup_single_file(const char *src_path, int socket) {
 
     struct packet *p = create_packet(0, 0, PT_BACKUP_ONE_FILE, NULL);
 
+    send_packet_and_wait_ack(socket, p);
     /* Send packet for start backup single file */
     send_packet(socket, p);
     listen_packet(p, PT_TIMEOUT, socket);
@@ -124,13 +131,17 @@ int backup_single_file(const char *src_path, int socket) {
     return 0;
 }
 
-//int receive_file(char file_name, int socket){
-    ///* Open a file to write the bytes */
+int receive_file(char file_name, int socket){
+    /* Create a file with "file_name" */
 
-    ///* Receive packtes */
+    /* Flag PT_DATA */
+    /* Read the packets from socket and concatenate into "file_name" */
+    /* Send ACK */
+    /* If parity is wrong send NACK */
+    /* Until receive END packet. */
+    /* Flag END_FILE */
 
-
-//}
+}
 
 /*
  * Sends multiple files to the server.
