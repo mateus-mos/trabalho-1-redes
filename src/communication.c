@@ -7,7 +7,6 @@
 #include <net/if.h>
 #include <netinet/ip.h>
 #include <netinet/in.h>
-#include <stdint.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
@@ -39,88 +38,51 @@ uint8_t calculate_vertical_parity(uint8_t packet_data[], size_t length) {
     return parity;
 }
 
+/* Verify packet parameters */
+int verify_packet_parameters(uint8_t size, uint8_t sequence, uint8_t type) {
+    if ((size > MAX_DATA_SIZE) || (sequence > MAX_SEQUENCE) || (type > MAX_TYPE)) {
+        return 0;
+    }
+    return 1;
+}
+
 /* 
- * Creates a packet with the given parameters.
+ * Creates or modifies a packet with the given parameters.
  * 
+ * @param packet The packet pointer, if NULL creates a new packet, otherwise modifies the existing packet.
  * @param size The size of the data in the packet.
  * @param sequence The sequence number of the packet.
  * @param type The type of the packet.
  * @param data The data to be sent in the packet.
- * @return A pointer to the created packet.
+ * @return A pointer to the created or modified packet.
  * 
  * @see destroy_packet
- * @see change_packet_data
 */
-struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data)
-{
-    
-    /* Verify Limits*/
-    if((size > MAX_DATA_SIZE) || (sequence > MAX_SEQUENCE) || (type > MAX_TYPE))
-    {
+struct packet *create_or_modify_packet(struct packet *packet, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data) {
+    if (!verify_packet_parameters(size, sequence, type)) {
         perror("Invalid packet!");
         return NULL;
-    } 
+    }
 
-    struct packet *packet;
-    packet = calloc(1, sizeof(struct packet));
-
-    if(packet == NULL) {
-        perror("Malloc failed!");
-        exit(EXIT_FAILURE);
+    if (packet == NULL) {
+        packet = calloc(1, sizeof(struct packet));
+        if (packet == NULL) {
+            perror("Malloc failed!");
+            exit(EXIT_FAILURE);
+        }
     }
 
     packet->start_marker = START_MARKER;
     packet->size = size;
     packet->sequence = sequence;
     packet->type = type;
-    
-    if(data != NULL)
-    {
+    packet->parity = 0;
+
+    if (data != NULL) {
         memcpy(&packet->data, data, size);
         packet->parity = calculate_vertical_parity(data, size);
-        return packet;
     }
 
-    packet->parity = 0;
-
-    return packet;
-}
-
-/* 
- * Changes the data of a packet.
- * 
- * @param packet The packet to be changed.
- * @param size The new size of the data in the packet. 
- * @param sequence The new sequence number of the packet. 
- * @param type The new type of the packet. 
- * @param data The new data to be sent in the packet. 
- * 
- * @see create_packet
- * @see destroy_packet
-*/
-struct packet *change_packet(struct packet *packet, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data){
-    /* Verify Limits*/
-    if((size > MAX_DATA_SIZE) || (sequence > MAX_SEQUENCE) || (type > MAX_TYPE))
-    {
-        perror("Invalid packet!");
-        return NULL;
-    } 
-
-    if(packet == NULL) {
-        perror("packet is NULL");
-        exit(EXIT_FAILURE);
-    } 
-
-    packet->size = size;
-    packet->sequence = sequence;
-    packet->type = type;
-    if(data != NULL)
-    {
-        memcpy(packet->data, data, size);
-        packet->parity = calculate_vertical_parity(data, size);
-        return packet;  
-    }
-    packet->parity = 0;
 
     return packet;
 }
@@ -130,9 +92,9 @@ struct packet *change_packet(struct packet *packet, uint8_t size, uint8_t sequen
  * 
  * @param p The packet to be destroyed.
  * 
- * @see create_packet
+ * @see create_or_modify_packet
 */
-void destroy_packet(struct packet *p){
+void destroy_packet(struct packet *p) {
     free(p);
 }
 
@@ -261,7 +223,7 @@ int listen_packet(struct packet *buffer, int timeout, int socket){
                     printf("Parity value buffer: %d\n", buffer->parity);
                     printf("buffer->size: %d\n", buffer->size);
                     printf("Parity value calculated: %d\n", calculate_vertical_parity(buffer->data, buffer->size));
-                    struct packet *nack = create_packet(0, 0, PT_NACK, NULL);
+                    struct packet *nack = create_or_modify_packet(NULL, 0, 0, PT_NACK, NULL);
                     send_packet(nack, socket);
                     destroy_packet(nack);
                 }

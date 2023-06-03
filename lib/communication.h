@@ -33,15 +33,12 @@ struct packet {
     uint8_t data[63]; // Max length of data is 63 bytes
 };
 
-struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data);
-
-struct packet *change_packet(struct packet *p, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data);
-
 int is_a_valid_packet(struct packet *p);
 
 int send_packet_and_wait_for_response(struct packet *packet, struct packet *response, int timeout, int socket);
 int send_packet(struct packet *p, int socket);
 int listen_packet(struct packet *buffer, int timeout, int socket);
+struct packet *create_or_modify_packet(struct packet *packet, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data); 
 void destroy_packet(struct packet *p);
 
 #endif

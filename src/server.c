@@ -24,7 +24,7 @@ int main() {
     printf("Waiting for client...\n");
 
     struct packet buffer;
-    struct packet *packet = create_packet(0, 0, PT_ACK, NULL);
+    struct packet *packet = create_or_modify_packet(NULL, 0, 0, PT_ACK, NULL);
     //int packets_received = 0;
     int ignore = 1;
 

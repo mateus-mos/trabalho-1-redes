@@ -47,7 +47,7 @@ int backup_single_file(const char *src_path, int socket) {
         return -1;
     }
 
-    struct packet *p = create_packet(0, 0, PT_BACKUP_ONE_FILE, NULL);
+    struct packet *p = create_or_modify_packet(NULL, 0, 0, PT_BACKUP_ONE_FILE, NULL);
 
     /* Send packet for start backup single file */
     if(send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0){
@@ -82,7 +82,7 @@ int backup_single_file(const char *src_path, int socket) {
         fread(data_buffer, file_read_bytes, 1, file);
 
         /* Put read data into packet. */ 
-        change_packet(p, file_read_bytes, packet_sequence, PT_DATA, data_buffer);
+        create_or_modify_packet(p, file_read_bytes, packet_sequence, PT_DATA, data_buffer);
 
         /* Send packet. */
         if(send_packet_and_wait_for_response(p, &p_buffer, PT_TIMEOUT, socket) != 0) 
@@ -112,8 +112,8 @@ int receive_file(const char *file_name, int socket){
         return 1;
     }
 
-    struct packet *p = create_packet(0, 0, PT_DATA, NULL);
-    struct packet *response = create_packet(0, 0, PT_ACK, NULL);
+    struct packet *p = create_or_modify_packet(NULL, 0, 0, PT_DATA, NULL);
+    struct packet *response = create_or_modify_packet(NULL, 0, 0, PT_ACK, NULL);
     int end_file_received = 0;
 
     // Listen for packets and process them
@@ -140,7 +140,7 @@ int receive_file(const char *file_name, int socket){
         if(p->type == PT_DATA)
         {
             // Send ACK packet
-            change_packet(response, 0, p->sequence, PT_ACK, NULL);
+            create_or_modify_packet(response, 0, p->sequence, PT_ACK, NULL);
             if(send_packet(response, socket) == -1)
             {
                 perror("Error sending ACK packet");
