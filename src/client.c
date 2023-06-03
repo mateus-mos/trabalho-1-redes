@@ -24,26 +24,31 @@ int main() {
     int sockfd = create_socket("lo");
     printf("Socket created!\n");
 
-    // char command[100];
-    // printf("---------- Client Terminal ----------\n");
-    // printf("$: ");
-    // scanf("%99s", command);
-    
-    // while (strcmp(command, "exit")){
-    //     if(!strcmp(command,"cd")){
-            
-    //     } else if (!strcmp(command,"backup")){
-            
-    //     } else if (!strcmp(command,"restore")){
-            
-    //     } else if(!strcmp(command,"set server dir")){
-            
-    //     }
+    char command[50];
+    char option[5];
+    char file_name[30];
 
-    //     printf("$: ");
-    //     scanf("%99s", command);
+    printf("---------- Client Terminal ----------\n");
+    printf("$: ");
 
-    // }
+    fgets(command, sizeof(command), stdin);
+
+    while (strcmp(command, "exit"))
+    {    
+        if (sscanf(command, "%*s %s %[^\n]", option, file_name) == 2 && strcmp(option, "-s") == 0) 
+        {
+            printf("Comando válido!\n");
+            printf("Nome do arquivo: %s\n", file_name);
+            backup_single_file(file_name, sockfd);
+        } 
+        else 
+        {
+            printf("Comando inválido!\n");
+        }   
+
+        printf("$: ");
+        fgets(command, sizeof(command), stdin);
+    }
     
     /* Printar um terminal */
     /* Receber input de um comando */
@@ -68,8 +73,7 @@ int main() {
     * Servidor indisponível
    */
 
-    backup_single_file("/home/mateus/Documents/BCC/trabalho-1-redes/helloworld.txt", sockfd);
-
+    // backup_single_file("helloworld.txt",sockfd);
     close(sockfd);
 
     return 0;
