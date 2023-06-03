@@ -12,8 +12,8 @@ debug: all
 client: client.o socket.o communication.o backup.o
 		gcc $(FLAGS) obj/backup.o obj/client.o obj/socket.o obj/communication.o -o $(BIN_DIR)/client -lm
 
-server: server.o socket.o communication.o
-		gcc $(FLAGS) obj/server.o obj/socket.o obj/communication.o -o $(BIN_DIR)/server
+server: server.o socket.o communication.o backup.o
+		gcc $(FLAGS) obj/server.o obj/socket.o obj/communication.o obj/backup.o -o $(BIN_DIR)/server -lm
 
 server.o: server.c
 		gcc $(FLAGS) -c src/server.c -o obj/server.o

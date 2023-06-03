@@ -21,6 +21,24 @@
 double time_passed(clock_t start, clock_t end);
 void shift_bits(struct packet *packet);
 
+uint8_t calculate_vertical_parity(uint8_t packet_data[], size_t length) {
+    uint8_t parity = 0;
+    int odd = -1;
+
+    for (size_t i = 0; i < length; i++) {
+        for(unsigned int j = 0; j < length; j++) {
+            if((1U << i) & packet_data[j]) {
+                odd *= -1;
+            }
+        }
+        uint8_t byte_parity = odd == 1? 1 : 0;
+        parity = parity | (byte_parity << (i % 8));
+        odd = -1;
+    }
+
+    return parity;
+}
+
 /* 
  * Creates a packet with the given parameters.
  * 
@@ -33,7 +51,8 @@ void shift_bits(struct packet *packet);
  * @see destroy_packet
  * @see change_packet_data
 */
-struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data){
+struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data)
+{
     
     /* Verify Limits*/
     if((size > MAX_DATA_SIZE) || (sequence > MAX_SEQUENCE) || (type > MAX_TYPE))
@@ -42,29 +61,35 @@ struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8
         return NULL;
     } 
 
-    struct packet *p;
-    p = malloc(sizeof(struct packet));
+    struct packet *packet;
+    packet = calloc(1, sizeof(struct packet));
 
-    if(p == NULL) {
+    if(packet == NULL) {
         perror("Malloc failed!");
         exit(EXIT_FAILURE);
     }
 
-    p->start_marker = START_MARKER;
-    p->size = size;
-    p->sequence = sequence;
-    p->type = type;
+    packet->start_marker = START_MARKER;
+    packet->size = size;
+    packet->sequence = sequence;
+    packet->type = type;
     
     if(data != NULL)
-        memcpy(&p->data, data, size);
+    {
+        memcpy(&packet->data, data, size);
+        packet->parity = calculate_vertical_parity(data, size);
+        return packet;
+    }
 
-    return p;
+    packet->parity = 0;
+
+    return packet;
 }
 
 /* 
  * Changes the data of a packet.
  * 
- * @param p The packet to be changed.
+ * @param packet The packet to be changed.
  * @param size The new size of the data in the packet. 
  * @param sequence The new sequence number of the packet. 
  * @param type The new type of the packet. 
@@ -73,7 +98,7 @@ struct packet *create_packet(uint8_t size, uint8_t sequence, uint8_t type, uint8
  * @see create_packet
  * @see destroy_packet
 */
-struct packet *change_packet(struct packet *p, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data){
+struct packet *change_packet(struct packet *packet, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data){
     /* Verify Limits*/
     if((size > MAX_DATA_SIZE) || (sequence > MAX_SEQUENCE) || (type > MAX_TYPE))
     {
@@ -81,17 +106,23 @@ struct packet *change_packet(struct packet *p, uint8_t size, uint8_t sequence, u
         return NULL;
     } 
 
-    if(p == NULL) {
+    if(packet == NULL) {
         perror("packet is NULL");
         exit(EXIT_FAILURE);
     } 
 
-    p->size = size;
-    p->sequence = sequence;
-    p->type = type;
-    memcpy(p->data, data, size);
+    packet->size = size;
+    packet->sequence = sequence;
+    packet->type = type;
+    if(data != NULL)
+    {
+        memcpy(packet->data, data, size);
+        packet->parity = calculate_vertical_parity(data, size);
+        return packet;  
+    }
+    packet->parity = 0;
 
-    return p;
+    return packet;
 }
 
 /* 
@@ -103,25 +134,6 @@ struct packet *change_packet(struct packet *p, uint8_t size, uint8_t sequence, u
 */
 void destroy_packet(struct packet *p){
     free(p);
-}
-
-/* 
- * Creates a buffer from a packet.
- * 
- * @param p The packet to be converted.
- * @param buffer The buffer to be filled.
- * @return A pointer to the buffer.
- * 
- * @see parse_packet_from_buffer
-*/
-struct packet *parse_packet_from_buffer(struct packet *p, uint8_t *buffer){
-    p->start_marker = buffer[0];
-    p->size = buffer[1];
-    p->sequence = buffer[2];
-    p->type = buffer[3];
-    memcpy(&p->data, &buffer[4], p->size);
-
-    return p;
 }
 
 /* Sends a packet and waits for a ACK.
@@ -140,7 +152,7 @@ struct packet *parse_packet_from_buffer(struct packet *p, uint8_t *buffer){
 int send_packet_and_wait_for_response(struct packet *packet, struct packet *response, int timeout, int socket){
     int ACK_received = 0;
     while(!ACK_received){
-        send_packet(socket, packet);
+        send_packet(packet, socket);
 
         listen_packet(response, timeout, socket); // listen its own packet (LOOPBACK)
         int listen_response = listen_packet(response, timeout, socket);
@@ -156,7 +168,7 @@ int send_packet_and_wait_for_response(struct packet *packet, struct packet *resp
     return 0;
 }
 
-int send_packet(int socket, struct packet *packet){
+int send_packet(struct packet *packet, int socket){
     if(send(socket, packet, sizeof(struct packet), 0) == -1) {
         perror("sendto");
         close(socket);
@@ -194,8 +206,14 @@ void unshift_bits(struct packet *packet)
         packet->data[i] = packet->data[i] >> 12;
 }
 
+/* clear buffer */
+void clear_buffer(struct packet *packet)
+{
+    memset(packet, 0, sizeof(struct packet));
+}
+
 /* 
- * Listens for a packet of a given type.
+ * Listens for a packet.
  * 
  * @param buffer The buffer to be filled.
  * @param timeout The timeout in seconds. 
@@ -222,6 +240,7 @@ int listen_packet(struct packet *buffer, int timeout, int socket){
     * can be received (packets that isn't comming from client). 
     */
     while(time_passed(start, now) < timeout){
+        clear_buffer(buffer);
         t_out.tv_sec = timeout - time_passed(start, now);
 
         int ready = select(socket + 1, &read_fds, NULL, NULL, &t_out);
@@ -230,13 +249,25 @@ int listen_packet(struct packet *buffer, int timeout, int socket){
         } else if (ready == 0) {
             return -2; // Timeout
         } else {
-            ssize_t bytes_received = recvfrom(socket, buffer, sizeof(buffer), 0, NULL, NULL);
+            ssize_t bytes_received = recvfrom(socket, buffer, sizeof(struct packet), 0, NULL, NULL);
             if (bytes_received == -1) {
                 return -1;
             }
             /* Checks if the packet is from client. */ 
             if(is_a_valid_packet(buffer))
-                return 0;
+            {
+                if(buffer->parity != calculate_vertical_parity(buffer->data, buffer->size))
+                {
+                    printf("Parity value buffer: %d\n", buffer->parity);
+                    printf("buffer->size: %d\n", buffer->size);
+                    printf("Parity value calculated: %d\n", calculate_vertical_parity(buffer->data, buffer->size));
+                    struct packet *nack = create_packet(0, 0, PT_NACK, NULL);
+                    send_packet(nack, socket);
+                    destroy_packet(nack);
+                }
+                else 
+                    return 0; // if parity is correct
+            }
         }
         now = clock();
     }

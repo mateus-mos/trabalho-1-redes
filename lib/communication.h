@@ -29,7 +29,7 @@ struct packet {
     uint8_t size; // 6 bits => 2^6 - 1 = 63 
     uint8_t sequence; // 4 bits => 2^4 - 1 = 15 
     uint8_t type; // 4 bits => 2^4 - 1 = 15
-    //uint8_t parity; // 1 byte for parity
+    uint8_t parity; // 1 byte for parity
     uint8_t data[63]; // Max length of data is 63 bytes
 };
 
@@ -40,9 +40,8 @@ struct packet *change_packet(struct packet *p, uint8_t size, uint8_t sequence, u
 int is_a_valid_packet(struct packet *p);
 
 int send_packet_and_wait_for_response(struct packet *packet, struct packet *response, int timeout, int socket);
-int send_packet(int socket, struct packet *p);
+int send_packet(struct packet *p, int socket);
 int listen_packet(struct packet *buffer, int timeout, int socket);
-
 void destroy_packet(struct packet *p);
 
 #endif

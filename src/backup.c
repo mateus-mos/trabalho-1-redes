@@ -104,31 +104,65 @@ int backup_single_file(const char *src_path, int socket) {
     return 0;
 }
 
-int receive_file(char file_name, int socket){
-    
-    /* Create a file with "file_name" */
-    FILE *file;
-
-    file = fopen(file_name, "w"); // To do: verify mode
-
+int receive_file(const char *file_name, int socket){
+    // Create a file with "file_name"
+    FILE *file = fopen(file_name, "wb"); 
     if (file == NULL) {
-        printf("Error opening the file.\n");
+        perror("Error opening the file");
         return 1;
     }
 
-    /* Flag PT_DATA */
     struct packet *p = create_packet(0, 0, PT_DATA, NULL);
+    struct packet *response = create_packet(0, 0, PT_ACK, NULL);
+    int end_file_received = 0;
 
-    // fprintf(file, "content\n");
+    // Listen for packets and process them
+    while(!end_file_received) {
+        listen_packet(p, PT_TIMEOUT, socket);
+        int listen_status = listen_packet(p, PT_TIMEOUT, socket);
+        printf("Packet received: %d\n", p->type);
 
-    /* Read the packets from socket and concatenate into "file_name" */
-    /* Send ACK */
-    /* If parity is wrong send NACK */
-    /* Until receive END packet. */
-    /* Flag END_FILE */
+        if(listen_status == -1)
+        {
+            perror("Error listening for packets");
+            fclose(file);
+            destroy_packet(p);
+            destroy_packet(response);
+            return -1;
+        } else if (listen_status == -2) {
+            printf("Timeout waiting for packets\n");
+            fclose(file);
+            destroy_packet(p);
+            destroy_packet(response);
+            return -2;
+        }
+
+        if(p->type == PT_DATA)
+        {
+            // Send ACK packet
+            change_packet(response, 0, p->sequence, PT_ACK, NULL);
+            if(send_packet(response, socket) == -1)
+            {
+                perror("Error sending ACK packet");
+                fclose(file);
+                destroy_packet(p);
+                destroy_packet(response);
+                return -1;
+            }
+            // Write received data to the file
+            fwrite(p->data, p->size, 1, file);
+        }
+        else if(p->type == PT_END_FILE)
+        {
+            end_file_received = 1;
+        }
+
+    }
 
     fclose(file);
-    /* End */
+    destroy_packet(p);
+    destroy_packet(response);
+    return 0;
 }
 
 /*
