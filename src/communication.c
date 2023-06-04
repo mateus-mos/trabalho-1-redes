@@ -29,10 +29,11 @@ uint8_t calculate_vertical_parity(uint8_t packet_data[], size_t length)
     {
         for(unsigned int j = 0; j < length; j++)
         {
-            if((1U << i) & packet_data[j]) 
+            if((1U << i) & packet_data[j])
+            { 
                 odd *= -1;
+            }
         }
-
         uint8_t byte_parity = odd == 1? 1 : 0;
         parity = parity | (byte_parity << (i % 8));
         odd = -1;
@@ -65,7 +66,8 @@ int verify_packet_parameters(uint8_t size, uint8_t sequence, uint8_t type)
 */
 struct packet *create_or_modify_packet(struct packet *packet, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data) 
 {
-    if (!verify_packet_parameters(size, sequence, type)) {
+    if (!verify_packet_parameters(size, sequence, type)) 
+    {
         perror("Invalid packet!");
         return NULL;
     }
