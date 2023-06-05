@@ -129,7 +129,6 @@ int send_packet_and_wait_for_response(struct packet *packet, struct packet *resp
     {
         send_packet(packet, socket);
 
-        listen_packet(response, timeout, socket); // listen its own packet (LOOPBACK)
         int listen_response = listen_packet(response, timeout, socket);
 
         if(listen_response == -2) 
@@ -151,6 +150,10 @@ int send_packet(struct packet *packet, int socket)
         close(socket);
         exit(EXIT_FAILURE);
     } 
+    struct packet buffer;
+    listen_packet(&buffer, PT_TIMEOUT, socket); // Remove later (LOOPBACK)
+    listen_packet(&buffer, PT_TIMEOUT, socket);
+
     //shift_bits(packet);
     return 0;
 }

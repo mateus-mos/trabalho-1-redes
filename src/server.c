@@ -13,60 +13,51 @@
 #include "../lib/socket.h"
 #include "../lib/communication.h"
 #include "../lib/backup.h"
+#include "../lib/log.h"
 
 #define PORT 27015 
 
 int main() {
 
-    printf("Creating socket...\n");
+    log_message("Creating socket...");
     int socket = create_socket("lo");
-    printf("Socket created!\n");
-    printf("Waiting for client...\n");
+    log_message("Socket created!");
+    log_message("Server up and running!");
+    log_message("Waiting for requests...");
 
     struct packet buffer;
     struct packet *packet = create_or_modify_packet(NULL, 0, 0, PT_ACK, NULL);
     //int packets_received = 0;
-    int ignore = 1;
 
     while (1) {
+        listen_packet(&buffer, 9999, socket); // Remove later (LOOPBACK)
         listen_packet(&buffer, 9999, socket);
 
-        /* The "ignore" variable is used to ignore duplicated packets.
-         * Remove this "if" when change the interface.
-         */
-        if(ignore == 1){
-            /* The above "if" ignore packets that server sent.
-             * This occurs only in the "loopback" interface. 
-             * Remove this "if" when change the interface.
-             */
-            if(memcmp(&buffer, packet, sizeof(struct packet)) != 0){
-                switch(buffer.type){
-                    case PT_ACK:
-                        printf("ACK received: %d\n", buffer.type);
-                        break;
-                    case PT_DATA:
-                        printf("DATA received: %d\n", buffer.type);
-                        send_packet(packet, socket); // Send ACK
-                        break;
-                    case PT_NACK:
-                        printf("NACK received: %d\n", buffer.type);
-                        break;
-                    case PT_BACKUP_ONE_FILE:
-                        printf("BACKUP_ONE_FILE received: %d\n", buffer.type);
-                        send_packet(packet, socket); // Send ACK
-                        receive_file("backup.txt", socket);
-                        break;
-                    case PT_BACKUP_FILES:
-                        printf("BACKUP_FILES received: %d\n", buffer.type);
-                        break;
-                    default:
-                        printf("Invalid packet received!\n");
-                        break;
-                }
-            }
-            ignore *= -1;
-        } else if(ignore == -1 && is_a_valid_packet(&buffer)){
-            ignore *= -1;
+
+        switch(buffer.type){
+            case PT_ACK:
+                printf("ACK received: %d\n", buffer.type);
+                break;
+            case PT_DATA:
+                printf("DATA received: %d\n", buffer.type);
+                send_packet(packet, socket); // Send ACK
+                break;
+            case PT_NACK:
+                printf("NACK received: %d\n", buffer.type);
+                break;
+            case PT_BACKUP_ONE_FILE:
+                log_message("BACKUP_ONE_FILE received!");
+                send_packet(packet, socket); // Send ACK
+
+                receive_file("backup.txt", socket);
+                log_message("Waiting for request...");
+                break;
+            case PT_BACKUP_FILES:
+                printf("BACKUP_FILES received: %d\n", buffer.type);
+                break;
+            default:
+                printf("Invalid packet received!\n");
+                break;
         }
         
         // Reset the buffer

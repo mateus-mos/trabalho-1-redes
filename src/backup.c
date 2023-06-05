@@ -2,9 +2,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <string.h>
 #include <math.h>
 #include "../lib/backup.h"
 #include "../lib/communication.h"
+#include "../lib/log.h"
 
 
 /* Get the size of a file in bytes. 
@@ -92,7 +94,6 @@ int backup_single_file(const char *src_path, int socket)
         /* Put read data into packet. */ 
         create_or_modify_packet(p, file_read_bytes, packet_sequence, PT_DATA, data_buffer);
 
-        printf("%s", p->data);
         /* Send packet. */
         if(send_packet_and_wait_for_response(p, &p_buffer, PT_TIMEOUT, socket) != 0) 
         {
@@ -110,6 +111,7 @@ int backup_single_file(const char *src_path, int socket)
 
     create_or_modify_packet(p, 0, 0, PT_END_FILE, NULL);
     send_packet(p, socket);
+    
 
     printf("\nFile sent successfully!\n\n\n");
 
@@ -120,7 +122,9 @@ int backup_single_file(const char *src_path, int socket)
 }
 
 int receive_file(const char *file_name, int socket)
-{
+{   
+    log_message("Receiving file:");
+    log_message(file_name);
     // Create a file with "file_name"
     FILE *file = fopen(file_name, "wb"); 
     if (file == NULL) 
@@ -131,14 +135,19 @@ int receive_file(const char *file_name, int socket)
 
     struct packet packet_buffer;
     struct packet *response = create_or_modify_packet(NULL, 0, 0, PT_ACK, NULL);
+    long long int packets_received = 1;
     int end_file_received = 0;
 
     /* Listen for packets and process them */
     while(!end_file_received) 
     {
-        listen_packet(&packet_buffer, PT_TIMEOUT, socket); // Remove later (LOOPBACK)
         int listen_status = listen_packet(&packet_buffer, PT_TIMEOUT, socket);
-        printf("Packet received: %d\n", packet_buffer.type);
+
+
+        if(packet_buffer.type == PT_END_FILE)
+        {
+            end_file_received = 1;
+        }
 
         if(listen_status == -1)
         {
@@ -149,7 +158,8 @@ int receive_file(const char *file_name, int socket)
         } 
         else if (listen_status == -2) 
         {
-            printf("Timeout waiting for packets\n");
+            log_message("Timeout waiting for packets");
+            log_message("File transfer failed");
             fclose(file);
             destroy_packet(response);
             return -2;
@@ -167,15 +177,12 @@ int receive_file(const char *file_name, int socket)
                 destroy_packet(response);
                 return -1;
             }
-            listen_packet(&packet_buffer, PT_TIMEOUT, socket); // Remove later (LOOPBACK)
-        }
-        else if(packet_buffer.type == PT_END_FILE)
-        {
-            end_file_received = 1;
+            packets_received++;
         }
     }
 
-    printf("File received successfully!\n");
+    log_message("File received!");
+
 
     fclose(file);
     destroy_packet(response);

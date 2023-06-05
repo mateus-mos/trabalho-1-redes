@@ -2,6 +2,7 @@
     "C_Cpp.errorSquiggles": "disabled",
     "files.associations": {
         "socket.h": "c",
-        "types.h": "c"
+        "types.h": "c",
+        "stdio.h": "c"
     }
 }
