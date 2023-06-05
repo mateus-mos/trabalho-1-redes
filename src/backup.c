@@ -76,12 +76,15 @@ int backup_single_file(const char *src_path, int socket)
     int packet_sequence = 1;
     for(int i = 0; i < packets_quantity; i++) 
     {
-        printf("\rSending packets [%d/%d]...", i+1, packets_quantity);
-        fflush(stdout);
+        //printf("\rSending packets [%d/%d]...", i+1, packets_quantity);
+        //fflush(stdout);
 
         /* Change length for the last packet. */
         if(i == packets_quantity - 1)
+        {
             file_read_bytes = file_size % MAX_DATA_SIZE;
+            p->data[file_read_bytes] = '\0';
+        }
 
         /* Read bytes from file. */
         fread(data_buffer, file_read_bytes, 1, file);
@@ -89,10 +92,11 @@ int backup_single_file(const char *src_path, int socket)
         /* Put read data into packet. */ 
         create_or_modify_packet(p, file_read_bytes, packet_sequence, PT_DATA, data_buffer);
 
+        printf("%s", p->data);
         /* Send packet. */
         if(send_packet_and_wait_for_response(p, &p_buffer, PT_TIMEOUT, socket) != 0) 
         {
-            printf("Error while file: %s \n", src_path);
+            printf("Error while sending file: %s \n", src_path);
             fclose(file);
             destroy_packet(p);
             return -1;
@@ -101,7 +105,12 @@ int backup_single_file(const char *src_path, int socket)
         if(packet_sequence == MAX_SEQUENCE)
             packet_sequence = 0;
         packet_sequence++;
+
     }
+
+    create_or_modify_packet(p, 0, 0, PT_END_FILE, NULL);
+    send_packet(p, socket);
+
     printf("\nFile sent successfully!\n\n\n");
 
     fclose(file);
@@ -120,22 +129,21 @@ int receive_file(const char *file_name, int socket)
         return 1;
     }
 
-    struct packet *p = create_or_modify_packet(NULL, 0, 0, PT_DATA, NULL);
+    struct packet packet_buffer;
     struct packet *response = create_or_modify_packet(NULL, 0, 0, PT_ACK, NULL);
     int end_file_received = 0;
 
     /* Listen for packets and process them */
     while(!end_file_received) 
     {
-        listen_packet(p, PT_TIMEOUT, socket);
-        int listen_status = listen_packet(p, PT_TIMEOUT, socket);
-        printf("Packet received: %d\n", p->type);
+        listen_packet(&packet_buffer, PT_TIMEOUT, socket); // Remove later (LOOPBACK)
+        int listen_status = listen_packet(&packet_buffer, PT_TIMEOUT, socket);
+        printf("Packet received: %d\n", packet_buffer.type);
 
         if(listen_status == -1)
         {
             perror("Error listening for packets");
             fclose(file);
-            destroy_packet(p);
             destroy_packet(response);
             return -1;
         } 
@@ -143,33 +151,33 @@ int receive_file(const char *file_name, int socket)
         {
             printf("Timeout waiting for packets\n");
             fclose(file);
-            destroy_packet(p);
             destroy_packet(response);
             return -2;
         }
-        if(p->type == PT_DATA)
+        if(packet_buffer.type == PT_DATA)
         {
+            /* Write received data to the file */
+            fwrite(packet_buffer.data, packet_buffer.size, 1, file);
+
             /* Send ACK packet */
-            create_or_modify_packet(response, 0, p->sequence, PT_ACK, NULL);
             if(send_packet(response, socket) == -1)
             {
                 perror("Error sending ACK packet");
                 fclose(file);
-                destroy_packet(p);
                 destroy_packet(response);
                 return -1;
             }
-            /* Write received data to the file */
-            fwrite(p->data, p->size, 1, file);
+            listen_packet(&packet_buffer, PT_TIMEOUT, socket); // Remove later (LOOPBACK)
         }
-        else if(p->type == PT_END_FILE)
+        else if(packet_buffer.type == PT_END_FILE)
         {
             end_file_received = 1;
         }
     }
 
+    printf("File received successfully!\n");
+
     fclose(file);
-    destroy_packet(p);
     destroy_packet(response);
 
     return 0;

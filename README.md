@@ -9,6 +9,14 @@ Protocolo das mensagens (baseado no Kermit)
 - Dados: Tamanho em bytes
 - Paridade Vertical: 8 bits
 
+## To-do
+
+- [ ] Backup de 1 arquivo
+- [ ] Backup mais de um arquivo
+- [ ] Recupera 1 arquivo
+- [ ] Recupera mais de um arquivo
+- [ ] Escolhe diretorio servidor
+- [ ] Verifica backup
 
 | Tipo 	|          Descriçao          	|
 |:----:	|:---------------------------:	|
