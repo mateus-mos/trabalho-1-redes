@@ -9,6 +9,19 @@
 #include "../lib/log.h"
 
 
+void uint8_array_to_string(size_t size, uint8_t *array, char *result, size_t result_size) {
+    if (result_size < size + 1) {
+        return; // The provided buffer is not large enough
+    }
+
+    for (size_t i = 0; i < size; ++i) {
+        result[i] = (char)array[i]; // Convert each uint8_t to a char
+    }
+
+    result[size] = '\0'; // Null-terminate the string
+}
+
+
 /* Get the size of a file in bytes. 
  * 
  * @param path The path of the file.
@@ -110,7 +123,9 @@ int backup_single_file(const char *src_path, int socket)
     create_or_modify_packet(p, 0, 0, PT_END_FILE, NULL);
     if(send_packet_and_wait_for_response(p, &p_buffer, PT_TIMEOUT, socket) != 0)
     {
-        printf("Couldn't send end file packet!\n"); 
+        #ifdef DEBUG
+        log_message("Couldn't send end file packet!\n");
+        #endif
         destroy_packet(p);
         return -1;
     }
@@ -130,15 +145,36 @@ int backup_single_file(const char *src_path, int socket)
 */
 int backup_multiple_files(const char files[][100], int files_quantity, int socket)
 {
+    /* Send packet for start backup multiple files */
+    struct packet *p = create_or_modify_packet(NULL, 0, 0, PT_BACKUP_MULTIPLE_FILES, NULL);
+
+    /* Send packet for start backup multiple files */
+    if(send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
+        return -1;
+
     for(int i = 0; i < files_quantity; i++)
     {
         printf("Sending file: %s\n", files[i]);
-        //if(backup_single_file(files[i], socket) != 0)
-        //{
-            //log_message("Error while backing up files!");
-            //return -1;
-        //}
+        if(backup_single_file(files[i], socket) != 0)
+        {
+            #ifdef DEBUG
+            log_message("Error while backing up multiple files!");
+            #endif
+            return -1;
+        }
     }
+
+    /* Send end backup multiple files packet */
+    create_or_modify_packet(p, 0, 0, PT_END_GROUP_FILES, NULL);
+    if(send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
+    {
+        #ifdef DEBUG
+        log_message("Error while sending end backup multiple files packet!");
+        #endif
+        destroy_packet(p);
+        return -1;
+    }
+
     return 0;
 }
 
@@ -210,6 +246,50 @@ int receive_file(const char *file_name, int socket)
 
     log_message("File received!");
     destroy_packet(response);
+    return 0;
+}
+
+/*
+ * Receives multiple files from the client.
+ * 
+ * @param socket The socket to receive the files.
+ * @return 0 if the files were received successfully, -1 otherwise.
+ * 
+*/
+int receive_multiple_files(int socket)
+{
+    int end_files = 0;
+    struct packet packet_buffer;
+    char file_name[100];
+
+    while(end_files == 0)
+    {
+        if(listen_packet(&packet_buffer, PT_TIMEOUT, socket) != 0)
+        {
+            #ifdef DEBUG
+            log_message("An error ocurred while listening for packets");
+            log_message("Is the server still running?");
+            #endif
+            return -1;
+        }
+
+        /* Convert the file name from uint8_t array to string */
+        uint8_array_to_string(packet_buffer.size, packet_buffer.data, file_name, sizeof(file_name));
+        
+        if(packet_buffer.type == PT_BACKUP_ONE_FILE)
+            receive_file(file_name, socket);
+        else if(packet_buffer.type == PT_END_GROUP_FILES)
+            end_files = 1;
+        else
+        {
+            #ifdef DEBUG
+            log_message("Received unexpected packet type while receiving multiple files");
+            return -1;
+            #endif
+        }
+
+    }
+
     return 0;
 }
 

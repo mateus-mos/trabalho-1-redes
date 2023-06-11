@@ -4,7 +4,7 @@
 
 /* Protocol type codes */
 #define PT_BACKUP_ONE_FILE 0x0
-#define PT_BACKUP_FILES 0x1
+#define PT_BACKUP_MULTIPLE_FILES 0x1
 #define PT_RESTORE_ONE_FILE 0x2
 #define PT_RESTORE_FILES 0x3
 #define PT_CHOOSE_SERVER_DIR 0x4

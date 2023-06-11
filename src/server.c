@@ -49,7 +49,7 @@ int main() {
                 receive_file("backup.txt", socket);
                 log_message("Waiting for request...");
                 break;
-            case PT_BACKUP_FILES:
+            case PT_BACKUP_MULTIPLE_FILES:
                 printf("BACKUP_FILES received: %d\n", buffer.type);
                 break;
             default:

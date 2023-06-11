@@ -11,8 +11,8 @@ Protocolo das mensagens (baseado no Kermit)
 
 ## To-do
 
-- [ ] Backup de 1 arquivo
-- [ ] Backup mais de um arquivo
+- [X] Backup de 1 arquivo
+- [X] Backup mais de um arquivo (verificar se funciona)
 - [ ] Recupera 1 arquivo
 - [ ] Recupera mais de um arquivo
 - [ ] Escolhe diretorio servidor
