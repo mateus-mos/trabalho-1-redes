@@ -25,12 +25,6 @@ long long int get_file_size(const char *path)
 }
 
 /*
- * Send the file data to the server.
-*/
-void send_file_data(){
-}
-
-/*
  * Sends a single file to the server. 
  * 
  * @param src_path The path of the file to be sent.
@@ -126,6 +120,37 @@ int backup_single_file(const char *src_path, int socket)
     return 0;
 }
 
+/*
+ * Sends multiple files to the server.
+ * 
+ * @param src_dir The path of the directory containing the files to be sent.
+ * @param socket The socket to send the files.
+ * @return 0 if the files were sent successfully, -1 otherwise.
+ * 
+*/
+int backup_multiple_files(const char files[][100], int files_quantity, int socket)
+{
+    for(int i = 0; i < files_quantity; i++)
+    {
+        printf("Sending file: %s\n", files[i]);
+        //if(backup_single_file(files[i], socket) != 0)
+        //{
+            //log_message("Error while backing up files!");
+            //return -1;
+        //}
+    }
+    return 0;
+}
+
+/* 
+ * Receives a single file from the client.
+ *
+ * @param file_name The name of the file to be received.
+ * @param socket The socket to receive the file.
+ * 
+ * @return 0 if the file was received successfully, -1 otherwise.
+ * 
+*/
 int receive_file(const char *file_name, int socket)
 {   
     log_message("Receiving file:");
@@ -147,28 +172,17 @@ int receive_file(const char *file_name, int socket)
     while(!end_file_received) 
     {
         int listen_status = listen_packet(&packet_buffer, PT_TIMEOUT, socket);
-        log_message("Packet of file received"); 
-
 
         if(packet_buffer.type == PT_END_FILE)
-        {
             end_file_received = 1;
-        }
 
-        if(listen_status == -1)
+        if(listen_status != 0)
         {
-            perror("Error listening for packets");
+            log_message("An error ocurred while listening for packets");
+            log_message("Is the server still running?");
             fclose(file);
             destroy_packet(response);
             return -1;
-        } 
-        else if (listen_status == -2) 
-        {
-            log_message("Timeout waiting for packets");
-            log_message("File transfer failed");
-            fclose(file);
-            destroy_packet(response);
-            return -2;
         }
         if(packet_buffer.type == PT_DATA)
         {
@@ -194,22 +208,11 @@ int receive_file(const char *file_name, int socket)
     create_or_modify_packet(response, 0, 0, PT_OK, NULL);
     send_packet(response, socket);
 
-
     log_message("File received!");
     destroy_packet(response);
     return 0;
 }
 
-/*
- * Sends multiple files to the server.
- * 
- * @param src_dir The path of the directory containing the files to be sent.
- * @param socket The socket to send the files.
- * @return 0 if the files were sent successfully, -1 otherwise.
- * 
-*/
-//int backup_multiple_files(const char *src_dir, int socket) {
-//}
 //
 //void restore_single_file(const char *src_path, int socket) {
 //}
