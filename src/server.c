@@ -31,23 +31,20 @@ int main() {
 
     while (1) {
         listen_packet(&buffer, 9999, socket); // Remove later (LOOPBACK)
-        listen_packet(&buffer, 9999, socket);
+        listen_packet(&buffer, 9999, socket); // Remove later (LOOPBACK)
 
 
         switch(buffer.type){
             case PT_ACK:
                 printf("ACK received: %d\n", buffer.type);
                 break;
-            case PT_DATA:
-                printf("DATA received: %d\n", buffer.type);
-                send_packet(packet, socket); // Send ACK
-                break;
             case PT_NACK:
                 printf("NACK received: %d\n", buffer.type);
                 break;
             case PT_BACKUP_ONE_FILE:
                 log_message("BACKUP_ONE_FILE received!");
-                send_packet(packet, socket); // Send ACK
+                create_or_modify_packet(packet, 0, 0, PT_OK, NULL);
+                send_packet(packet, socket); // send OK 
 
                 receive_file("backup.txt", socket);
                 log_message("Waiting for request...");

@@ -59,10 +59,11 @@ int backup_single_file(const char *src_path, int socket)
     /* Send packet for start backup single file */
     if(send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
     {
-        printf("Error while trying to reach server!\n");
+        log_message("Error while trying to reach server!\n");
         return -1;
     }
 
+    /* Create buffers */
     uint8_t data_buffer[63];
     struct packet p_buffer;
 
@@ -70,18 +71,17 @@ int backup_single_file(const char *src_path, int socket)
     long long file_size = get_file_size(src_path);
     int packets_quantity = ceil(file_size / (float)(MAX_DATA_SIZE));
 
-    printf("\n\n");
-    printf("Sending file: %s\n", src_path);
-    printf("Packets quantity: %d\n", packets_quantity);
-    printf("File size: %lld\n", file_size);
+    #ifdef DEBUG
+    log_message("Sending file:");
+    log_message(src_path);
+    #endif
 
     int packet_sequence = 1;
     for(int i = 0; i < packets_quantity; i++) 
     {
-        //printf("\rSending packets [%d/%d]...", i+1, packets_quantity);
-        //fflush(stdout);
-
-        /* Change length for the last packet. */
+        /* Sometimes the last packet is not full, 
+         * so we need to know how many bytes we need to read. 
+        */
         if(i == packets_quantity - 1)
         {
             file_read_bytes = file_size % MAX_DATA_SIZE;
@@ -103,21 +103,26 @@ int backup_single_file(const char *src_path, int socket)
             return -1;
         }
         
+        /* Reset packet sequence number. */ 
         if(packet_sequence == MAX_SEQUENCE)
             packet_sequence = 0;
         packet_sequence++;
 
     }
 
-    create_or_modify_packet(p, 0, 0, PT_END_FILE, NULL);
-    send_packet(p, socket);
-    
-
-    printf("\nFile sent successfully!\n\n\n");
-
     fclose(file);
-    destroy_packet(p);
 
+    /* Send end file packet. */
+    create_or_modify_packet(p, 0, 0, PT_END_FILE, NULL);
+    if(send_packet_and_wait_for_response(p, &p_buffer, PT_TIMEOUT, socket) != 0)
+    {
+        printf("Couldn't send end file packet!\n"); 
+        destroy_packet(p);
+        return -1;
+    }
+
+    destroy_packet(p);
+    log_message("File sent successfully!");
     return 0;
 }
 
@@ -142,6 +147,7 @@ int receive_file(const char *file_name, int socket)
     while(!end_file_received) 
     {
         int listen_status = listen_packet(&packet_buffer, PT_TIMEOUT, socket);
+        log_message("Packet of file received"); 
 
 
         if(packet_buffer.type == PT_END_FILE)
@@ -181,12 +187,16 @@ int receive_file(const char *file_name, int socket)
         }
     }
 
-    log_message("File received!");
-
-
     fclose(file);
-    destroy_packet(response);
 
+    /* Send OK packet */
+    log_message("Sending OK packet");
+    create_or_modify_packet(response, 0, 0, PT_OK, NULL);
+    send_packet(response, socket);
+
+
+    log_message("File received!");
+    destroy_packet(response);
     return 0;
 }
 

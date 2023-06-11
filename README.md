@@ -18,6 +18,10 @@ Protocolo das mensagens (baseado no Kermit)
 - [ ] Escolhe diretorio servidor
 - [ ] Verifica backup
 
+## Duvídas
+
+- Sequence é global?
+
 | Tipo 	|          Descriçao          	|
 |:----:	|:---------------------------:	|
 | 0000 	|      Backup de 1 arquivo  	  |

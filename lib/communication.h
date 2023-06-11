@@ -15,9 +15,10 @@
 #define PT_END_FILE 0x9
 #define PT_END_GROUP_FILES 0xA
 #define PT_ERROR 0xC
-#define PT_ACK 0xD
-#define PT_NACK 0xE
-#define PT_TIMEOUT 3 //seconds
+#define PT_OK 0xD
+#define PT_ACK 0xE
+#define PT_NACK 0xF
+#define PT_TIMEOUT 2 //seconds
 
 #define MAX_PACKET_SIZE 72
 #define MAX_DATA_SIZE 63

@@ -16,6 +16,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include "../lib/communication.h"
+#include "../lib/log.h"
 
 double time_passed(clock_t start, clock_t end);
 void shift_bits(struct packet *packet);
@@ -109,7 +110,7 @@ void destroy_packet(struct packet *p)
     free(p);
 }
 
-/* Sends a packet and waits for a ACK.
+/* Sends a packet and waits for a ACK or OK.
  * If an NACK is received, the packet is sent again.
  * 
  * @param packet The packet to be sent. 
@@ -124,8 +125,8 @@ void destroy_packet(struct packet *p)
 */
 int send_packet_and_wait_for_response(struct packet *packet, struct packet *response, int timeout, int socket)
 {
-    int ACK_received = 0;
-    while(!ACK_received)
+    int ACK_OK_received = 0;
+    while(!ACK_OK_received)
     {
         send_packet(packet, socket);
 
@@ -135,8 +136,8 @@ int send_packet_and_wait_for_response(struct packet *packet, struct packet *resp
             return -2;
         else if(listen_response == -1) 
             return -1;
-        if(response->type == PT_ACK)
-            ACK_received = 1;
+        if(response->type == PT_ACK || response->type == PT_OK)
+            ACK_OK_received = 1;
     }
 
     return 0;
@@ -151,7 +152,7 @@ int send_packet(struct packet *packet, int socket)
         exit(EXIT_FAILURE);
     } 
     struct packet buffer;
-    listen_packet(&buffer, PT_TIMEOUT, socket); // Remove later (LOOPBACK)
+    listen_packet(&buffer, PT_TIMEOUT, socket);
     listen_packet(&buffer, PT_TIMEOUT, socket);
 
     //shift_bits(packet);
@@ -194,7 +195,7 @@ void clear_buffer(struct packet *packet)
 }
 
 /* 
- * Listens for a packet.
+ * Listens for a valid packet.
  * 
  * @param buffer The buffer to be filled.
  * @param timeout The timeout in seconds. 
@@ -243,22 +244,15 @@ int listen_packet(struct packet *buffer, int timeout, int socket)
             if (bytes_received == -1) 
                 return -1;
 
-            /* Checks if the packet is from client. */ 
-            if(is_a_valid_packet(buffer))
+            /* Checks if the packet is from client and if it's parity is right  */ 
+            if(is_a_valid_packet(buffer) == 0)
             {
-                if(buffer->parity != calculate_vertical_parity(buffer->data, buffer->size))
-                {
-                    printf("Parity value buffer: %d\n", buffer->parity);
-                    printf("buffer->size: %d\n", buffer->size);
-                    printf("Parity value calculated: %d\n", calculate_vertical_parity(buffer->data, buffer->size));
-
-                    struct packet *nack = create_or_modify_packet(NULL, 0, 0, PT_NACK, NULL);
-                    send_packet(nack, socket);
-                    destroy_packet(nack);
-                }
-                else 
-                    return 0; // if parity is correct
+                struct packet *nack = create_or_modify_packet(NULL, 0, 0, PT_NACK, NULL);
+                send_packet(nack, socket);
+                destroy_packet(nack);
             }
+            else
+                return 0;
         }
         now = clock();
     }
@@ -266,8 +260,9 @@ int listen_packet(struct packet *buffer, int timeout, int socket)
     return -2;
 }
 
+
 /* 
- * Checks if a packet is valid.
+ * Checks if the start marker is correct and if the parity is correct.
  * 
  * @param p The packet to be checked.
 */
@@ -275,7 +270,9 @@ int is_a_valid_packet(struct packet *p)
 {
     if(p->start_marker != START_MARKER)
         return 0;
-
+    if(p->parity != calculate_vertical_parity(p->data, p->size))
+        return 0;
+    
     return 1;
 }
 
