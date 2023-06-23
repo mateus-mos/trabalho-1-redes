@@ -32,8 +32,8 @@ int main() {
     const char delimiter[] = " \n";
 
     printf("__________________Client Terminal__________________\n");
-    //printf("_> backup <file_name> \n");
-    //printf("_> backup -m <file_name_1> <file_name_2> ... <file_name_n> \n");
+    printf("_> backup <file_name> \n");
+    printf("_> backup -m <file_name_1> <file_name_2> ... <file_name_n> \n");
 
 
     while (1) {

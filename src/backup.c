@@ -37,6 +37,23 @@ long long int get_file_size(const char *path)
     return st.st_size;
 }
 
+char* uint8ArrayToString(const uint8_t* array, size_t length) {
+    char* str = (char*)malloc((length + 1) * sizeof(char));  // Allocate memory for the string
+    
+    if (str == NULL) {
+        fprintf(stderr, "Memory allocation failed.\n");
+        return NULL;
+    }
+    
+    for (size_t i = 0; i < length; i++) {
+        str[i] = (char)array[i];  // Convert each element to char and store in the string
+    }
+    
+    str[length] = '\0';  // Add the null-terminating character
+    
+    return str;
+}
+
 /*
  * Sends a single file to the server. 
  * 
@@ -61,8 +78,10 @@ int backup_single_file(const char *src_path, int socket)
         return -1;
     }
 
-    struct packet *p = create_or_modify_packet(NULL, 0, 0, PT_BACKUP_ONE_FILE, NULL);
+    struct packet *p = create_or_modify_packet(NULL, 0, 0, PT_BACKUP_ONE_FILE, (uint8_t *)(src_path));
 
+    char * file_name_converted = uint8ArrayToString(p->data, p->size);
+    printf(" File name: %s", file_name_converted);
     /* Send packet for start backup single file */
     if(send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
     {
@@ -154,7 +173,6 @@ int backup_multiple_files(const char files[][100], int files_quantity, int socke
 
     for(int i = 0; i < files_quantity; i++)
     {
-        printf("Sending file: %s\n", files[i]);
         if(backup_single_file(files[i], socket) != 0)
         {
             #ifdef DEBUG
@@ -260,7 +278,7 @@ int receive_multiple_files(int socket)
 {
     int end_files = 0;
     struct packet packet_buffer;
-    char file_name[100];
+    char file_name[64];
 
     while(end_files == 0)
     {

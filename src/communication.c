@@ -151,9 +151,6 @@ int send_packet(struct packet *packet, int socket)
         close(socket);
         exit(EXIT_FAILURE);
     } 
-    struct packet buffer;
-    listen_packet(&buffer, PT_TIMEOUT, socket);
-    listen_packet(&buffer, PT_TIMEOUT, socket);
 
     //shift_bits(packet);
     return 0;
@@ -244,6 +241,7 @@ int listen_packet(struct packet *buffer, int timeout, int socket)
             if (bytes_received == -1) 
                 return -1;
 
+            printf("\nReceiving packet %d", buffer->type);
             /* Checks if the packet is from client and if it's parity is right  */ 
             if(is_a_valid_packet(buffer) == 0)
             {
@@ -251,8 +249,9 @@ int listen_packet(struct packet *buffer, int timeout, int socket)
                 send_packet(nack, socket);
                 destroy_packet(nack);
             }
-            else
+            else{
                 return 0;
+            }
         }
         now = clock();
     }

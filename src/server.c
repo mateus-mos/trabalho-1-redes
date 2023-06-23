@@ -31,7 +31,7 @@ int main() {
 
     while (1) {
         listen_packet(&buffer, 9999, socket); // Remove later (LOOPBACK)
-        listen_packet(&buffer, 9999, socket); // Remove later (LOOPBACK)
+        //listen_packet(&buffer, 9999, socket); // Remove later (LOOPBACK)
 
 
         switch(buffer.type){
