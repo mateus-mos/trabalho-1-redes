@@ -77,11 +77,11 @@ void backup_command(char files_to_backup[][100], char *token, const char delimit
         if (i == 0) 
             printf("_> Please provide arguments for the backup command.\n");
         else
-            backup_multiple_files(files_to_backup, i, sockfd);
+            send_multiple_files(files_to_backup, i, sockfd);
 
     } else {
         printf("Single-file backup: %s\n", token);
-        backup_single_file(token, sockfd);
+        send_single_file(token, sockfd);
     }
 }
 
@@ -106,7 +106,7 @@ void backup_command(char files_to_backup[][100], char *token, const char delimit
 //        {
 //            printf("Comando válido!\n");
 //            printf("Nome do arquivo: %s\n", file_name);
-//            backup_single_file(file_name, sockfd);
+//            send_single_file(file_name, sockfd);
 //        } 
 //        else 
 //        {
@@ -140,7 +140,7 @@ void backup_command(char files_to_backup[][100], char *token, const char delimit
 //    * Servidor indisponível
 //   */
 //
-//    // backup_single_file("helloworld.txt",sockfd);
+//    // send_single_file("helloworld.txt",sockfd);
 //    close(sockfd);
 //
 //    return 0;

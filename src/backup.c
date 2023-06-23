@@ -62,7 +62,7 @@ char* uint8ArrayToString(const uint8_t* array, size_t length) {
  * @return 0 if the file was sent successfully, -1 otherwise.
  *  
 */
-int backup_single_file(const char *src_path, int socket) 
+int send_single_file(const char *src_path, int socket) 
 {
     if(src_path == NULL) 
     {
@@ -162,7 +162,7 @@ int backup_single_file(const char *src_path, int socket)
  * @return 0 if the files were sent successfully, -1 otherwise.
  * 
 */
-int backup_multiple_files(const char files[][100], int files_quantity, int socket)
+int send_multiple_files(const char files[][100], int files_quantity, int socket)
 {
     /* Send packet for start backup multiple files */
     struct packet *p = create_or_modify_packet(NULL, 0, 0, PT_BACKUP_MULTIPLE_FILES, NULL);
@@ -173,7 +173,7 @@ int backup_multiple_files(const char files[][100], int files_quantity, int socke
 
     for(int i = 0; i < files_quantity; i++)
     {
-        if(backup_single_file(files[i], socket) != 0)
+        if(send_single_file(files[i], socket) != 0)
         {
             #ifdef DEBUG
             log_message("Error while backing up multiple files!");
