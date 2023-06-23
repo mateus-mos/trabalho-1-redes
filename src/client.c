@@ -24,7 +24,7 @@
 void backup_command(char files_to_backup[][100], char *token, const char delimiter[], int sockfd);
 
 int main() {
-    int sockfd = create_socket("lo");
+    int sockfd = create_socket("eno1");
 
     char input[100];
     char *token;

@@ -20,7 +20,7 @@
 int main() {
 
     log_message("Creating socket...");
-    int socket = create_socket("lo");
+    int socket = create_socket("eno1");
     log_message("Socket created!");
     log_message("Server up and running!");
     log_message("Waiting for requests...");
