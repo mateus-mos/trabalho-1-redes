@@ -81,6 +81,7 @@ void backup_command(char files_to_backup[][100], char *token, const char delimit
 
     } else {
         printf("Single-file backup: %s\n", token);
+        backup_single_file(token, sockfd);
     }
 }
 
