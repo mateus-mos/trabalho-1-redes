@@ -20,7 +20,7 @@
 int main() {
 
     log_message("Creating socket...");
-    int socket = create_socket("eno1");
+    int socket = create_socket("enp7s0");
     log_message("Socket created!");
     log_message("Server up and running!");
     log_message("Waiting for requests...");
@@ -31,7 +31,7 @@ int main() {
 
     while (1) {
         listen_packet(&buffer, 9999, socket); // Remove later (LOOPBACK)
-        listen_packet(&buffer, 9999, socket); // Remove later (LOOPBACK)
+        // listen_packet(&buffer, 9999, socket); // Remove later (LOOPBACK)
 
 
         switch(buffer.type){
@@ -51,6 +51,9 @@ int main() {
                 break;
             case PT_BACKUP_MULTIPLE_FILES:
                 printf("BACKUP_FILES received: %d\n", buffer.type);
+                create_or_modify_packet(packet, 0, 0, PT_OK, NULL);
+                send_packet(packet, socket); // send OK 
+                receive_multiple_files(socket);
                 break;
             default:
                 printf("Invalid packet received!\n");

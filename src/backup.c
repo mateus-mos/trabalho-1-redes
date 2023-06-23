@@ -260,7 +260,7 @@ int receive_multiple_files(int socket)
 {
     int end_files = 0;
     struct packet packet_buffer;
-    char file_name[100];
+    char file_name[64];
 
     while(end_files == 0)
     {
@@ -274,10 +274,14 @@ int receive_multiple_files(int socket)
         }
 
         /* Convert the file name from uint8_t array to string */
-        uint8_array_to_string(packet_buffer.size, packet_buffer.data, file_name, sizeof(file_name));
+        // uint8_array_to_string(packet_buffer.size, packet_buffer.data, file_name, sizeof(file_name));
         
         if(packet_buffer.type == PT_BACKUP_ONE_FILE)
+        {
+            uint8_array_to_string(packet_buffer.size, packet_buffer.data, file_name, sizeof(file_name));
+            printf("\ncontent: %s", packet_buffer.data);
             receive_file(file_name, socket);
+        }
         else if(packet_buffer.type == PT_END_GROUP_FILES)
             end_files = 1;
         else

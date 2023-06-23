@@ -151,9 +151,9 @@ int send_packet(struct packet *packet, int socket)
         close(socket);
         exit(EXIT_FAILURE);
     } 
-    struct packet buffer;
-    listen_packet(&buffer, PT_TIMEOUT, socket);
-    listen_packet(&buffer, PT_TIMEOUT, socket);
+    // struct packet buffer;
+    // listen_packet(&buffer, PT_TIMEOUT, socket);
+    // listen_packet(&buffer, PT_TIMEOUT, socket);
 
     //shift_bits(packet);
     return 0;
