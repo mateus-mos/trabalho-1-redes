@@ -1,45 +1,12 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <string.h>
 #include <math.h>
 #include "../lib/backup.h"
-#include "../lib/communication.h"
+#include "../lib/network.h"
 #include "../lib/log.h"
-
-
-/* Get the size of a file in bytes. 
- * 
- * @param path The path of the file.
-*/
-long long int get_file_size(char *path) 
-{
-    struct stat st;
-    if(stat(path, &st) == -1) 
-    {
-        perror("Could not get file size!");
-        return -1;
-    }
-    return st.st_size;
-}
-
-char* uint8ArrayToString(uint8_t* array, size_t length) {
-    char* str = (char*)malloc((length + 1) * sizeof(char));  // Allocate memory for the string
-    
-    if (str == NULL) {
-        fprintf(stderr, "Memory allocation failed.\n");
-        return NULL;
-    }
-    
-    for (size_t i = 0; i < length; i++) {
-        str[i] = (char)array[i];  // Convert each element to char and store in the string
-    }
-    
-    str[length] = '\0';  // Add the null-terminating character
-    
-    return str;
-}
+#include "../lib/utils.h"
 
 /*
  * Sends a single file to the server. 

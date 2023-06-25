@@ -15,7 +15,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "../lib/socket.h"
-#include "../lib/communication.h"
+#include "../lib/network.h"
 #include "../lib/backup.h"
 
 #define DEST "127.0.0.1"
@@ -32,12 +32,11 @@ int main() {
     const char delimiter[] = " \n";
 
     printf("__________________Client Terminal__________________\n");
-    printf("_> backup <file_name> \n");
-    printf("_> backup -m <file_name_1> <file_name_2> ... <file_name_n> \n");
-
+    printf("--> backup <file_name> \n");
+    printf("--> backup -m <file_name_1> <file_name_2> ... <file_name_n> \n");
 
     while (1) {
-        printf("> ");
+        printf("client: ");
         fgets(input, sizeof(input), stdin);
 
         token = strtok(input, delimiter);
@@ -48,7 +47,7 @@ int main() {
         if (strcmp(token, "backup") == 0) {
             backup_command(files_to_backup, token, delimiter, sockfd);
         } else {
-            printf("_> Unsupported command: %s\n", token);
+            printf("--> Unsupported command: %s\n", token);
         }
     }
 
@@ -59,11 +58,11 @@ void backup_command(char files_to_backup[][MAX_FILE_NAME_SIZE], char *token, con
     token = strtok(NULL, delimiter);
 
     if (token == NULL) {
-        printf("_> Please provide arguments for the backup command.\n");
+        printf("--> Please provide arguments for the backup command.\n");
     }
 
     if (strcmp(token, "-m") == 0) {
-        printf("_> Multi-file backup.\n");
+        printf("--> Multi-file backup.\n");
 
         /* Save all files to backup in a matrix */
         int i = 0;
@@ -75,7 +74,7 @@ void backup_command(char files_to_backup[][MAX_FILE_NAME_SIZE], char *token, con
         }
 
         if (i == 0) 
-            printf("_> Please provide arguments for the backup command.\n");
+            printf("--> Please provide arguments for the backup command.\n");
         else
             send_multiple_files(files_to_backup, i, sockfd);
 
@@ -84,64 +83,3 @@ void backup_command(char files_to_backup[][MAX_FILE_NAME_SIZE], char *token, con
         send_single_file(token, sockfd);
     }
 }
-
-//int main() {
-//        
-//    printf("Creating socket...\n");
-//    int sockfd = create_socket("lo");
-//    printf("Socket created!\n");
-//
-//    char command[50];
-//    char option[5];
-//    char file_name[30];
-//
-//    printf("---------- Client Terminal ----------\n");
-//    printf("$: ");
-//
-//    fgets(command, sizeof(command), stdin);
-//
-//    while (strcmp(command, "exit"))
-//    {    
-//        if (sscanf(command, "%*s %s %[^\n]", option, file_name) == 2 && strcmp(option, "-s") == 0) 
-//        {
-//            printf("Comando válido!\n");
-//            printf("Nome do arquivo: %s\n", file_name);
-//            send_single_file(file_name, sockfd);
-//        } 
-//        else 
-//        {
-//            printf("Comando inválido!\n");
-//        }   
-//
-//        printf("$: ");
-//        fgets(command, sizeof(command), stdin);
-//    }
-//    
-//    /* Printar um terminal */
-//    /* Receber input de um comando */
-//    /* Executar um comando */
-//    /* Esperar outro comando*/
-//
-//    /* Comandos:
-//     * backup <file>
-//     * backup <dir>
-//     * restore <file>
-//     * restore <dir>
-//     * set_server_dir <dir>
-//     * cd_local <dir>
-//     * verify_file_md5 <file>
-//     * exit
-//    */
-//   /* Printar erros:
-//    * Digitar comando errado
-//    * Arquivo não existe
-//    * Diretório não existe
-//    * Diretório não pode ser acessado
-//    * Servidor indisponível
-//   */
-//
-//    // send_single_file("helloworld.txt",sockfd);
-//    close(sockfd);
-//
-//    return 0;
-//}

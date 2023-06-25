@@ -15,7 +15,7 @@
 #include <fcntl.h>
 #include <sys/time.h>
 #include <time.h>
-#include "../lib/communication.h"
+#include "../lib/network.h"
 #include "../lib/log.h"
 
 double time_passed(clock_t start, clock_t end);

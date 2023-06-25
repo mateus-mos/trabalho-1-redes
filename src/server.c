@@ -11,7 +11,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include "../lib/socket.h"
-#include "../lib/communication.h"
+#include "../lib/network.h"
 #include "../lib/backup.h"
 #include "../lib/log.h"
 

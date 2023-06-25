@@ -1,5 +1,5 @@
-#ifndef COMMUNICATION_H 
-#define COMMUNICATION_H 
+#ifndef NETWORK_H 
+#define NETWORK_H 
 #define START_MARKER 0x7E
 
 /* Protocol type codes */
