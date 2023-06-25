@@ -9,24 +9,11 @@
 #include "../lib/log.h"
 
 
-void uint8_array_to_string(size_t size, uint8_t *array, char *result, size_t result_size) {
-    if (result_size < size + 1) {
-        return; // The provided buffer is not large enough
-    }
-
-    for (size_t i = 0; i < size; ++i) {
-        result[i] = (char)array[i]; // Convert each uint8_t to a char
-    }
-
-    result[size] = '\0'; // Null-terminate the string
-}
-
-
 /* Get the size of a file in bytes. 
  * 
  * @param path The path of the file.
 */
-long long int get_file_size(const char *path) 
+long long int get_file_size(char *path) 
 {
     struct stat st;
     if(stat(path, &st) == -1) 
@@ -37,7 +24,7 @@ long long int get_file_size(const char *path)
     return st.st_size;
 }
 
-char* uint8ArrayToString(const uint8_t* array, size_t length) {
+char* uint8ArrayToString(uint8_t* array, size_t length) {
     char* str = (char*)malloc((length + 1) * sizeof(char));  // Allocate memory for the string
     
     if (str == NULL) {
@@ -62,7 +49,7 @@ char* uint8ArrayToString(const uint8_t* array, size_t length) {
  * @return 0 if the file was sent successfully, -1 otherwise.
  *  
 */
-int send_single_file(const char *src_path, int socket) 
+int send_single_file(char *src_path, int socket) 
 {
     if(src_path == NULL) 
     {
@@ -78,10 +65,15 @@ int send_single_file(const char *src_path, int socket)
         return -1;
     }
 
-    struct packet *p = create_or_modify_packet(NULL, 0, 0, PT_BACKUP_ONE_FILE, (uint8_t *)(src_path));
 
-    char * file_name_converted = uint8ArrayToString(p->data, p->size);
-    printf(" File name: %s", file_name_converted);
+    struct packet *p = create_or_modify_packet(NULL, MAX_FILE_NAME_SIZE, 0, PT_BACKUP_ONE_FILE, src_path);
+
+    if(p == NULL) 
+    {
+        perror("Could not create packet!");
+        return -1;
+    }
+
     /* Send packet for start backup single file */
     if(send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
     {
@@ -98,8 +90,8 @@ int send_single_file(const char *src_path, int socket)
     int packets_quantity = ceil(file_size / (float)(MAX_DATA_SIZE));
 
     #ifdef DEBUG
-    log_message("Sending file:");
-    log_message(src_path);
+        log_message("Sending file:");
+        log_message(src_path);
     #endif
 
     int packet_sequence = 1;
@@ -162,7 +154,8 @@ int send_single_file(const char *src_path, int socket)
  * @return 0 if the files were sent successfully, -1 otherwise.
  * 
 */
-int send_multiple_files(const char files[][100], int files_quantity, int socket)
+
+int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket)
 {
     /* Send packet for start backup multiple files */
     struct packet *p = create_or_modify_packet(NULL, 0, 0, PT_BACKUP_MULTIPLE_FILES, NULL);
@@ -205,10 +198,11 @@ int send_multiple_files(const char files[][100], int files_quantity, int socket)
  * @return 0 if the file was received successfully, -1 otherwise.
  * 
 */
-int receive_file(const char *file_name, int socket)
+int receive_file(char *file_name, int socket)
 {   
     log_message("Receiving file:");
     log_message(file_name);
+
     // Create a file with "file_name"
     FILE *file = fopen(file_name, "wb"); 
     if (file == NULL) 
@@ -278,15 +272,15 @@ int receive_multiple_files(int socket)
 {
     int end_files = 0;
     struct packet packet_buffer;
-    char file_name[64];
+    char *file_name;
 
     while(end_files == 0)
     {
         if(listen_packet(&packet_buffer, PT_TIMEOUT, socket) != 0)
         {
             #ifdef DEBUG
-            log_message("An error ocurred while listening for packets");
-            log_message("Is the server still running?");
+                log_message("An error ocurred while listening for packets");
+                log_message("Is the server still running?");
             #endif
             return -1;
         }
@@ -296,8 +290,7 @@ int receive_multiple_files(int socket)
         
         if(packet_buffer.type == PT_BACKUP_ONE_FILE)
         {
-            uint8_array_to_string(packet_buffer.size, packet_buffer.data, file_name, sizeof(file_name));
-            printf("\ncontent: %s", packet_buffer.data);
+            file_name = uint8ArrayToString(packet_buffer.data, packet_buffer.size);
             receive_file(file_name, socket);
         }
         else if(packet_buffer.type == PT_END_GROUP_FILES)

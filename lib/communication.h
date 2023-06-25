@@ -39,7 +39,7 @@ int is_a_valid_packet(struct packet *p);
 int send_packet_and_wait_for_response(struct packet *packet, struct packet *response, int timeout, int socket);
 int send_packet(struct packet *p, int socket);
 int listen_packet(struct packet *buffer, int timeout, int socket);
-struct packet *create_or_modify_packet(struct packet *packet, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data); 
+struct packet *create_or_modify_packet(struct packet *packet, uint8_t size, uint8_t sequence, uint8_t type, void *data); 
 void destroy_packet(struct packet *p);
 
 #endif

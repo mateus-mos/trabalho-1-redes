@@ -47,9 +47,8 @@ uint8_t calculate_vertical_parity(uint8_t packet_data[], size_t length)
 int verify_packet_parameters(uint8_t size, uint8_t sequence, uint8_t type) 
 {
     if ((size > MAX_DATA_SIZE) || (sequence > MAX_SEQUENCE) || (type > MAX_TYPE)) 
-    {
         return 0;
-    }
+
     return 1;
 }
 
@@ -65,7 +64,7 @@ int verify_packet_parameters(uint8_t size, uint8_t sequence, uint8_t type)
  * 
  * @see destroy_packet
 */
-struct packet *create_or_modify_packet(struct packet *packet, uint8_t size, uint8_t sequence, uint8_t type, uint8_t *data) 
+struct packet *create_or_modify_packet(struct packet *packet, uint8_t size, uint8_t sequence, uint8_t type, void *data) 
 {
     if (!verify_packet_parameters(size, sequence, type)) 
     {
@@ -152,8 +151,9 @@ int send_packet(struct packet *packet, int socket)
         exit(EXIT_FAILURE);
     } 
     // struct packet buffer;
-    // listen_packet(&buffer, PT_TIMEOUT, socket);
-    // listen_packet(&buffer, PT_TIMEOUT, socket);
+    struct packet buffer;
+    listen_packet(&buffer, PT_TIMEOUT, socket);
+    listen_packet(&buffer, PT_TIMEOUT, socket);
 
     //shift_bits(packet);
     return 0;
@@ -244,7 +244,6 @@ int listen_packet(struct packet *buffer, int timeout, int socket)
             if (bytes_received == -1) 
                 return -1;
 
-            printf("\nReceiving packet %d", buffer->type);
             /* Checks if the packet is from client and if it's parity is right  */ 
             if(is_a_valid_packet(buffer) == 0)
             {

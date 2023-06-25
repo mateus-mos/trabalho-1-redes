@@ -20,7 +20,7 @@
 int main() {
 
     log_message("Creating socket...");
-    int socket = create_socket("enp7s0");
+    int socket = create_socket("lo");
     log_message("Socket created!");
     log_message("Server up and running!");
     log_message("Waiting for requests...");
@@ -30,8 +30,8 @@ int main() {
     //int packets_received = 0;
 
     while (1) {
+        listen_packet(&buffer, 9999, socket); 
         listen_packet(&buffer, 9999, socket); // Remove later (LOOPBACK)
-        //listen_packet(&buffer, 9999, socket); // Remove later (LOOPBACK)
 
 
         switch(buffer.type){

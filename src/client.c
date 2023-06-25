@@ -21,14 +21,14 @@
 #define DEST "127.0.0.1"
 #define PORT 27015
 
-void backup_command(char files_to_backup[][100], char *token, const char delimiter[], int sockfd);
+void backup_command(char files_to_backup[][MAX_FILE_NAME_SIZE], char *token, const char delimiter[], int sockfd);
 
 int main() {
-    int sockfd = create_socket("eno1");
+    int sockfd = create_socket("lo");
 
     char input[100];
     char *token;
-    char files_to_backup[100][100];
+    char files_to_backup[100][MAX_FILE_NAME_SIZE];
     const char delimiter[] = " \n";
 
     printf("__________________Client Terminal__________________\n");
@@ -55,7 +55,7 @@ int main() {
     return 0;
 }
 
-void backup_command(char files_to_backup[][100], char *token, const char delimiter[], int sockfd){
+void backup_command(char files_to_backup[][MAX_FILE_NAME_SIZE], char *token, const char delimiter[], int sockfd){
     token = strtok(NULL, delimiter);
 
     if (token == NULL) {
