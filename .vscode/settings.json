@@ -4,6 +4,7 @@
         "socket.h": "c",
         "types.h": "c",
         "stdio.h": "c",
-        "log.h": "c"
+        "log.h": "c",
+        "stdlib.h": "c"
     }
 }

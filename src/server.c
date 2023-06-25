@@ -14,8 +14,7 @@
 #include "../lib/network.h"
 #include "../lib/backup.h"
 #include "../lib/log.h"
-
-#define PORT 27015 
+#include "../lib/utils.h"
 
 int main() {
 
@@ -23,37 +22,102 @@ int main() {
     int socket = create_socket("lo");
     log_message("Socket created!");
     log_message("Server up and running!");
-    log_message("Waiting for requests...");
+
+    char current_directory[100];
+    get_current_directory(current_directory, sizeof(current_directory));
+    strcat(current_directory, "files/");
+
 
     struct packet buffer;
     struct packet *packet = create_or_modify_packet(NULL, 0, 0, PT_ACK, NULL);
+    char *file_name = NULL;
+    char *full_path_to_file = NULL;
     //int packets_received = 0;
 
     while (1) {
+        log_message("Waiting for request...");
         listen_packet(&buffer, 9999, socket); 
         listen_packet(&buffer, 9999, socket); // Remove later (LOOPBACK)
 
 
         switch(buffer.type){
             case PT_ACK:
-                printf("ACK received: %d\n", buffer.type);
+                log_message("ACK received!");
                 break;
             case PT_NACK:
-                printf("NACK received: %d\n", buffer.type);
+                log_message("NACK received!");
                 break;
             case PT_BACKUP_ONE_FILE:
                 log_message("BACKUP_ONE_FILE received!");
-                create_or_modify_packet(packet, 0, 0, PT_OK, NULL);
-                send_packet(packet, socket); // send OK 
 
-                receive_file("backup.txt", socket);
-                log_message("Waiting for request...");
+                // Send OK
+                create_or_modify_packet(packet, 0, 0, PT_OK, NULL);
+                send_packet(packet, socket); 
+
+                file_name = uint8ArrayToString(buffer.data, buffer.size);
+                full_path_to_file = concatenate_strings(current_directory, file_name);
+
+                if(receive_file(full_path_to_file, socket) == -1){
+                    log_message("Error receiving file!");
+                    create_or_modify_packet(packet, 0, 0, PT_ERROR, "Error receiving file!");
+                    send_packet(packet, socket); // send ERROR
+                    free(file_name);
+                    break;
+                }
+
                 break;
             case PT_BACKUP_MULTIPLE_FILES:
-                printf("BACKUP_FILES received: %d\n", buffer.type);
+                log_message("BACKUP_MULTIPLE_FILES received!");
+
+                // Send OK
                 create_or_modify_packet(packet, 0, 0, PT_OK, NULL);
-                send_packet(packet, socket); // send OK 
+                send_packet(packet, socket); 
+
+                // Receive files
                 receive_multiple_files(socket);
+                break;
+
+            case PT_RESTORE_FILE:
+                log_message("RESTORE_FILE received!");
+
+                // Send OK
+                create_or_modify_packet(packet, 0, 0, PT_OK, NULL);
+                send_packet(packet, socket); 
+
+                // Receive file name
+                file_name = uint8ArrayToString(buffer.data, buffer.size);
+
+                if(file_exists(file_name) == 0){
+                    log_message("File does not exist!");
+
+                    create_or_modify_packet(packet, 0, 0, PT_ERROR, "File does not exist!");
+                    send_packet(packet, socket); // send ERROR
+
+                    free(file_name);
+                    break;
+                }
+
+                full_path_to_file = concatenate_strings(current_directory, file_name);
+
+                log_message("Receiving file:");
+                log_message(file_name);
+                log_message("Saving to:");
+                log_message(full_path_to_file);
+
+                if(send_single_file(full_path_to_file, socket) != 0){
+                    log_message("Error sending file!");
+
+                    // Error sending file
+                    create_or_modify_packet(packet, 0, 0, PT_ERROR, "Error sending file!");
+                    send_packet(packet, socket); // send ERROR
+
+                    free(file_name);
+                    free(full_path_to_file);
+                    break;
+                }
+
+                free(file_name);
+                free(full_path_to_file);
                 break;
             default:
                 printf("Invalid packet received!\n");

@@ -113,6 +113,7 @@ int send_single_file(char *src_path, int socket)
     return 0;
 }
 
+
 /*
  * Sends multiple files to the server.
  * 
@@ -159,23 +160,23 @@ int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, in
 /* 
  * Receives a single file from the client.
  *
- * @param file_name The name of the file to be received.
+ * @param full_path The full path of the file to be received.
  * @param socket The socket to receive the file.
  * 
  * @return 0 if the file was received successfully, -1 otherwise.
  * 
 */
-int receive_file(char *file_name, int socket)
+int receive_file(char *full_path, int socket)
 {   
     log_message("Receiving file:");
-    log_message(file_name);
+    log_message(full_path);
 
     // Create a file with "file_name"
-    FILE *file = fopen(file_name, "wb"); 
+    FILE *file = fopen(full_path, "wb"); 
     if (file == NULL) 
     {
         perror("Error opening the file");
-        return 1;
+        return -1;
     }
 
     struct packet packet_buffer;
@@ -239,7 +240,7 @@ int receive_multiple_files(int socket)
 {
     int end_files = 0;
     struct packet packet_buffer;
-    char *file_name;
+    char *file_name = NULL;
 
     while(end_files == 0)
     {
@@ -264,6 +265,9 @@ int receive_multiple_files(int socket)
             end_files = 1;
         else
         {
+
+            if(file_name != NULL)
+                free(file_name);
             #ifdef DEBUG
             log_message("Received unexpected packet type while receiving multiple files");
             return -1;
@@ -272,13 +276,51 @@ int receive_multiple_files(int socket)
 
     }
 
+    if(file_name != NULL)
+        free(file_name);
     return 0;
 }
 
-//
-//void restore_single_file(const char *src_path, int socket) {
-//}
-//
+
+void restore_single_file(const char *file_name, int socket) {
+    struct packet *p = create_or_modify_packet(NULL, 0, 0, PT_RESTORE_ONE_FILE, file_name);
+
+    /* Send packet for start restore single file */
+    if(send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
+    {
+        printf(" Error while sending start restore single file packet!\n");
+        return;
+    }
+
+    if(p->type == PT_ERROR)
+    {
+        char *error_msg = uint8ArrayToString(p->data, p->size);
+
+        printf(" Error while restoring file!\n");
+        printf(" Error message: %s\n", error_msg);
+
+        destroy_packet(p);
+        free(error_msg);
+        return;
+    }
+
+    /* Send file */
+    receive_file(src_path, socket);
+
+    /* Send end restore single file packet */
+    create_or_modify_packet(p, 0, 0, PT_END_FILE, NULL);
+    if(send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
+    {
+        printf(" Error while sending end restore single file packet!\n");
+        destroy_packet(p);
+        return;
+    }
+
+    destroy_packet(p);
+    printf(" File restored successfully!\n")
+    return;
+}
+
 //void restore_multiple_files(const char *src_dir, int socket) {
 //}
 //

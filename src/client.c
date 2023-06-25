@@ -18,24 +18,23 @@
 #include "../lib/network.h"
 #include "../lib/backup.h"
 
-#define DEST "127.0.0.1"
-#define PORT 27015
+void backup_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const char delimiter[], int sockfd);
 
-void backup_command(char files_to_backup[][MAX_FILE_NAME_SIZE], char *token, const char delimiter[], int sockfd);
-
-int main() {
+int main()
+{
     int sockfd = create_socket("lo");
 
     char input[100];
     char *token;
-    char files_to_backup[100][MAX_FILE_NAME_SIZE];
+    char files_names[100][MAX_FILE_NAME_SIZE];
     const char delimiter[] = " \n";
 
     printf("__________________Client Terminal__________________\n");
     printf("--> backup <file_name> \n");
     printf("--> backup -m <file_name_1> <file_name_2> ... <file_name_n> \n");
 
-    while (1) {
+    while (1) 
+    {
         printf("client: ");
         fgets(input, sizeof(input), stdin);
 
@@ -44,42 +43,54 @@ int main() {
             continue;
         }
 
-        if (strcmp(token, "backup") == 0) {
-            backup_command(files_to_backup, token, delimiter, sockfd);
-        } else {
+        if (strcmp(token, "backup") == 0) 
+            process_command(files_names, token, delimiter, BACKUP, sockfd);
+        else if(strcmp(toke, "restore"))
+            restore_command(files_names, token, delimiter, RESTORE,sockfd);
+        else 
             printf("--> Unsupported command: %s\n", token);
-        }
     }
 
     return 0;
 }
 
-void backup_command(char files_to_backup[][MAX_FILE_NAME_SIZE], char *token, const char delimiter[], int sockfd){
+void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const char delimiter[], int type_flag, int sockfd)
+{
     token = strtok(NULL, delimiter);
 
-    if (token == NULL) {
-        printf("--> Please provide arguments for the backup command.\n");
+    if (token == NULL)
+    {
+        printf("--> Please provide arguments for the command.\n");
     }
 
-    if (strcmp(token, "-m") == 0) {
-        printf("--> Multi-file backup.\n");
+    // Check if it is a multi-file command
+    if (strcmp(token, "-m") == 0)
+    {
+        printf("--> Multi-file command.\n");
 
         /* Save all files to backup in a matrix */
         int i = 0;
         token = strtok(NULL, delimiter);
         while (token != NULL) {
-            strcpy(files_to_backup[i], token);
+            strcpy(files_names[i], token);
             token = strtok(NULL, delimiter);
             i++;
         }
 
         if (i == 0) 
-            printf("--> Please provide arguments for the backup command.\n");
-        else
-            send_multiple_files(files_to_backup, i, sockfd);
+            printf("--> Please provide arguments for the command.\n");
+        elfe if(type_flag == BACKUP)
+            send_multiple_files(files_names, i, sockfd);
+        else if(type_flag == RESTORE)
+            restore_multiple_files(files_names, i, sockfd
 
-    } else {
-        printf("Single-file backup: %s\n", token);
-        send_single_file(token, sockfd);
+    } 
+    else
+    {
+        printf("Single-file command: %s\n", token);
+        if(type_flag == BACKUP)
+            send_single_file(token, sockfd);
+        else if(type_flag == RESTORE)
+            restore_single_file(token, sockfd);
     }
 }

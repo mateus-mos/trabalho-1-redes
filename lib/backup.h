@@ -2,6 +2,8 @@
 #define BACKUP_H
 
 #define MAX_FILE_NAME_SIZE 63 
+#define BACKUP 0
+#define RESTORE 1
 
 int send_single_file(char *src_path, int socket);
 int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket);
