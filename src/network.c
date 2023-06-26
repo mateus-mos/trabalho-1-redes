@@ -257,8 +257,7 @@ int listen_packet(struct packet *buffer, int timeout, int socket)
         }
         now = clock();
     }
-
-    return -2;
+    return -2; 
 }
 
 

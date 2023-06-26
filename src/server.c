@@ -53,6 +53,9 @@ int main() {
                 send_packet(packet, socket); 
 
                 file_name = uint8ArrayToString(buffer.data, buffer.size);
+                printf("\nnome do arquivo: %s\n",file_name);
+                printf("\nbuffer data: %s\n", buffer.data);
+
                 full_path_to_file = concatenate_strings(current_directory, file_name);
 
                 if(receive_file(full_path_to_file, socket) == -1){
@@ -83,7 +86,10 @@ int main() {
                 send_packet(packet, socket); 
 
                 // Receive file name
-                file_name = uint8ArrayToString(buffer.data, buffer.size);
+                file_name = uint8ArrayToString(buffer.data, buffer.size); 
+
+                printf("\nnome do arquivo: %s\n",file_name);
+                printf("\nbuffer data: %s\n", buffer.data);
 
                 if(file_exists(file_name) == 0){
                     log_message("File does not exist!");

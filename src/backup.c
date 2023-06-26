@@ -32,13 +32,12 @@ int send_single_file(char *src_path, int socket)
         return -1;
     }
 
-
     struct packet *p = create_or_modify_packet(NULL, MAX_FILE_NAME_SIZE, 0, PT_BACKUP_ONE_FILE, src_path);
 
     if(p == NULL) 
     {
         perror("Could not create packet!");
-        return -1;
+        return -1; 
     }
 
     /* Send packet for start backup single file */
@@ -192,8 +191,9 @@ int receive_file(char *full_path, int socket)
         if(packet_buffer.type == PT_END_FILE)
             end_file_received = 1;
 
-        if(listen_status != 0)
+        if(listen_status != 0) // parando aqui
         {
+            printf("\n listen_status: %d\n", listen_status);
             log_message("An error ocurred while listening for packets");
             log_message("Is the server still running?");
             fclose(file);
@@ -283,8 +283,10 @@ int receive_multiple_files(int socket)
 
 
 void restore_single_file(char *file_name, int socket) {
-    struct packet *p = create_or_modify_packet(NULL, 0, 0, PT_RESTORE_ONE_FILE, file_name);
+    struct packet *p = create_or_modify_packet(NULL, MAX_FILE_NAME_SIZE, 0, PT_RESTORE_ONE_FILE, file_name); 
 
+    printf("\n nome do arq: %s \n", p->data);
+    printf("\n file_name value: %s\n", file_name);
     /* Send packet for start restore single file */
     if(send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
     {
@@ -301,6 +303,15 @@ void restore_single_file(char *file_name, int socket) {
 
         destroy_packet(p);
         free(error_msg);
+        return;
+    }
+
+    create_or_modify_packet(p, MAX_FILE_NAME_SIZE, 0, PT_BACKUP_ONE_FILE, file_name);
+
+    if(send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
+    {
+        printf(" Error while sending backup single file packet!\n");
+        destroy_packet(p);
         return;
     }
 

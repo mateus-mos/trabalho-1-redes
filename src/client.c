@@ -43,6 +43,8 @@ int main()
             continue;
         }
 
+        printf("\nTOKEN: %s\n", token);
+
         if (strcmp(token, "backup") == 0) 
             process_command(files_names, token, delimiter, BACKUP, sockfd);
         else if(strcmp(token, "restore") == 0)
@@ -96,6 +98,6 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
         if(type_flag == BACKUP)
             send_single_file(token, sockfd);
         else if(type_flag == RESTORE)
-            restore_single_file(token, sockfd);
+            restore_single_file(token, sockfd); 
     }
 }
