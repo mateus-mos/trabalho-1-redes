@@ -17,7 +17,6 @@
 #include "../lib/utils.h"
 
 int main() {
-
     log_message("Creating socket...");
     int socket = create_socket("lo");
     log_message("Socket created!");
@@ -38,7 +37,6 @@ int main() {
         log_message("Waiting for request...");
         listen_packet(&buffer, 9999, socket); 
         listen_packet(&buffer, 9999, socket); // Remove later (LOOPBACK)
-
 
         switch(buffer.type){
             case PT_ACK:

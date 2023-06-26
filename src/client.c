@@ -18,7 +18,7 @@
 #include "../lib/network.h"
 #include "../lib/backup.h"
 
-void backup_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const char delimiter[], int sockfd);
+void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const char delimiter[], int type_flag, int sockfd);
 
 int main()
 {
@@ -45,8 +45,8 @@ int main()
 
         if (strcmp(token, "backup") == 0) 
             process_command(files_names, token, delimiter, BACKUP, sockfd);
-        else if(strcmp(toke, "restore"))
-            restore_command(files_names, token, delimiter, RESTORE,sockfd);
+        else if(strcmp(token, "restore") == 0)
+            process_command(files_names, token, delimiter, RESTORE,sockfd);
         else 
             printf("--> Unsupported command: %s\n", token);
     }
@@ -77,13 +77,18 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
             i++;
         }
 
-        if (i == 0) 
+        if (i == 0)
+        {
             printf("--> Please provide arguments for the command.\n");
-        elfe if(type_flag == BACKUP)
+        }
+        else if(type_flag == BACKUP)
+        {
             send_multiple_files(files_names, i, sockfd);
+        }
         else if(type_flag == RESTORE)
-            restore_multiple_files(files_names, i, sockfd
-
+        {
+            restore_multiple_files(files_names, i, sockfd);
+        }
     } 
     else
     {

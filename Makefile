@@ -9,7 +9,7 @@ all: client server
 debug: FLAGS += -DDEBUG -g
 debug: all
 
-client: client.o socket.o network.o backup.o utils.o
+client: client.o socket.o network.o backup.o utils.o log.o
 		gcc $(FLAGS) obj/log.o obj/backup.o obj/client.o obj/socket.o obj/network.o obj/utils.o -o $(BIN_DIR)/client -lm
 
 server: server.o socket.o network.o backup.o log.o utils.o

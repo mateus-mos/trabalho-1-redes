@@ -282,7 +282,7 @@ int receive_multiple_files(int socket)
 }
 
 
-void restore_single_file(const char *file_name, int socket) {
+void restore_single_file(char *file_name, int socket) {
     struct packet *p = create_or_modify_packet(NULL, 0, 0, PT_RESTORE_ONE_FILE, file_name);
 
     /* Send packet for start restore single file */
@@ -305,7 +305,7 @@ void restore_single_file(const char *file_name, int socket) {
     }
 
     /* Send file */
-    receive_file(src_path, socket);
+    receive_file(file_name, socket);
 
     /* Send end restore single file packet */
     create_or_modify_packet(p, 0, 0, PT_END_FILE, NULL);
@@ -317,10 +317,13 @@ void restore_single_file(const char *file_name, int socket) {
     }
 
     destroy_packet(p);
-    printf(" File restored successfully!\n")
+    printf(" File restored successfully!\n");
     return;
 }
 
+void restore_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket)
+{
+}
 //void restore_multiple_files(const char *src_dir, int socket) {
 //}
 //

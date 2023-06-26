@@ -8,7 +8,7 @@
 int send_single_file(char *src_path, int socket);
 int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket);
 void restore_single_file(char *src_path, int socke);
-void restore_multiple_files(char *src_dir, int socket);
+void restore_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket);
 void set_server_directory(char *dir);
 int receive_file(char *file_path, int socket);
 int receive_multiple_files(int socket);
