@@ -75,7 +75,7 @@ int main() {
                 receive_multiple_files(socket);
                 break;
 
-            case PT_RESTORE_FILE:
+            case PT_RESTORE_ONE_FILE:
                 log_message("RESTORE_FILE received!");
 
                 // Send OK
