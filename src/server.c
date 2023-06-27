@@ -86,9 +86,6 @@ int main() {
                 file_name = uint8ArrayToString(buffer.data, buffer.size); 
                 full_path_to_file = concatenate_strings(current_directory, file_name);
 
-                printf("\nnome do arquivo: %s",file_name);
-                printf("\nbuffer data: %s\n", buffer.data);
-
                 if(file_exists(full_path_to_file) == 0){
                     log_message("File does not exist!");
 
@@ -98,7 +95,8 @@ int main() {
                     free(file_name);
                     break;
                 }
-                else{
+                else
+                {
                     log_message("Requested file exists!");
                 }
 
@@ -107,7 +105,7 @@ int main() {
                 log_message("Sending to:");
                 log_message(file_name);
 
-                if(send_single_file(full_path_to_file, socket) != 0){ 
+                if(send_single_file(full_path_to_file, file_name,socket) != 0){ 
                     log_message("Error sending file!"); 
 
                     // Error sending file

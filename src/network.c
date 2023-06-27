@@ -113,14 +113,14 @@ int send_packet(struct packet *packet, int socket)
 {
     if(send(socket, packet, sizeof(struct packet), 0) == -1) 
     {
-        perror("sendto");
+        perror("send");
         close(socket);
         exit(EXIT_FAILURE);
     } 
     // struct packet buffer;
     struct packet buffer;
     listen_packet(&buffer, PT_TIMEOUT, socket);
-    listen_packet(&buffer, PT_TIMEOUT, socket);
+    //listen_packet(&buffer, PT_TIMEOUT, socket);
 
     //shift_bits(packet);
     return 0;
@@ -146,7 +146,10 @@ int send_packet_and_wait_for_response(struct packet *packet, struct packet *resp
     {
         send_packet(packet, socket);
 
+        //log_message("Packet sent, waiting for response...");
         int listen_response = listen_packet(response, timeout, socket);
+        //log_message("Response received!");
+
 
         if(listen_response == -2) 
             return -2;

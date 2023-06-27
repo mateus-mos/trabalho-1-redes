@@ -18,6 +18,7 @@ int create_socket(char *device)
   struct sockaddr_ll adress;
   struct packet_mreq mr;
 
+
   sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));  	/*cria socket*/
   if (sock == -1) {
     perror("Error creating socket! Did you run as root?\n");
@@ -40,7 +41,6 @@ int create_socket(char *device)
     printf("Erro no bind\n");
     exit(-1);
   }
-
 
   memset(&mr, 0, sizeof(mr));          /*Modo Promiscuo*/
   mr.mr_ifindex = ir.ifr_ifindex;

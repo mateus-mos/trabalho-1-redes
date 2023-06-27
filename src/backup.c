@@ -16,7 +16,7 @@
  * @return 0 if the file was sent successfully, -1 otherwise.
  *
  */
-int send_single_file(char *src_path, int socket)
+int send_single_file(char *src_path, char *file_name, int socket)
 {
     log_message("Sending file...");
 
@@ -48,6 +48,8 @@ int send_single_file(char *src_path, int socket)
         log_message("Error while trying to reach server!\n");
         return -1;
     }
+
+    log_message("Server reached!");
 
     /* Create buffers */
     uint8_t data_buffer[63];
@@ -133,7 +135,7 @@ int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, in
 
     for (int i = 0; i < files_quantity; i++)
     {
-        if (send_single_file(files[i], socket) != 0)
+        if (send_single_file(files[i], files[i], socket) != 0)
         {
             #ifdef DEBUG
                         log_message("Error while backing up multiple files!");
@@ -195,7 +197,7 @@ int receive_file(char *full_path, int socket)
         {
             printf("\n listen_status: %d\n", listen_status);
             log_message("An error ocurred while listening for packets");
-            log_message("Is the server still running?");
+            log_message("Is the other side still connected?");
             fclose(file);
             destroy_packet(response);
             return -1;
@@ -286,9 +288,9 @@ void restore_single_file(char *file_name, int socket)
 {
     struct packet *p = create_or_modify_packet(NULL, MAX_FILE_NAME_SIZE, 0, PT_RESTORE_ONE_FILE, file_name);
 
-    printf("\n nome do arq: %s \n", p->data);
-    printf("\n file_name value: %s\n", file_name);
-
+    #ifdef DEBUG
+            log_message("Sending start restore single file packet");
+    #endif
     /* Send packet for start restore single file */
     if (send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
     {
@@ -300,19 +302,18 @@ void restore_single_file(char *file_name, int socket)
     {
         char *error_msg = uint8ArrayToString(p->data, p->size);
 
-        printf(" Error while restoring file!\n");
-        printf(" Error message: %s\n", error_msg);
+        log_message("Error while restoring file!");
+        log_message(error_msg);
 
         destroy_packet(p);
         free(error_msg);
         return;
     }
 
-    create_or_modify_packet(p, MAX_FILE_NAME_SIZE, 0, PT_BACKUP_ONE_FILE, file_name);
-
-    if (send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
+    // Listen for PT_BACKUP_ONE_FILE packet
+    if (listen_packet(p, PT_TIMEOUT, socket) != 0)
     {
-        printf(" Error while sending backup single file packet!\n");
+        log_message("Error while listening for PT_BACKUP_ONE_FILE packet!");
         destroy_packet(p);
         return;
     }

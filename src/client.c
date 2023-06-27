@@ -96,7 +96,7 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
     {
         printf("Single-file command: %s\n", token);
         if(type_flag == BACKUP)
-            send_single_file(token, sockfd);
+            send_single_file(token, token, sockfd);
         else if(type_flag == RESTORE)
             restore_single_file(token, sockfd); 
     }
