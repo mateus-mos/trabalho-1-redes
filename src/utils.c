@@ -1,5 +1,7 @@
 #include "../lib/utils.h"
 
+int file_info_exists(const char *output_file, const char *file_name, const char *file_path);
+
 /* Get the size of a file in bytes. 
  * 
  * @param path The path of the file.
@@ -84,4 +86,81 @@ char *concatenate_strings(const char* str1, const char* str2) {
     strcat(result, str2);
 
     return result;
+}
+
+int file_info_exists(const char *output_file, const char *file_name, const char *file_path) {
+    FILE *fptr;
+    char line[1024];
+    int found = 0;
+
+    fptr = fopen(output_file, "r");
+    if (fptr == NULL) {
+        return 0;
+    }
+
+    while (fgets(line, sizeof(line), fptr)) {
+        if (strstr(line, file_name) || strstr(line, file_path)) {
+            found = 1;
+            break;
+        }
+    }
+
+    fclose(fptr);
+    return found;
+}
+
+void save_file_info(char *file_name, char *file_path, char *output_file) {
+    FILE *fptr;
+
+    if (file_info_exists(output_file, file_name, file_path)) {
+        printf("File information already saved.\n");
+        return;
+    }
+
+    // Open the output file in append mode
+    fptr = fopen(output_file, "a");
+    if (fptr == NULL) {
+        printf("Error opening output file!\n");
+        exit(1);
+    }
+
+    // Write the file name and file path to the output file
+    fprintf(fptr, "%s:%s\n", file_name, file_path);
+
+    // Close the output file
+    fclose(fptr);
+
+    printf("File information saved successfully.\n");
+}
+
+char *get_file_path(char *log_file, char *file_name) {
+    FILE *fptr;
+    char line[1024];
+    char *found = NULL;
+
+    fptr = fopen(log_file, "r");
+    if (fptr == NULL) {
+        printf("Error opening log file!\n");
+        exit(1);
+    }
+
+    while (fgets(line, sizeof(line), fptr)) {
+        if ((found = strstr(line, file_name)) != NULL) {
+            break;
+        }
+    }
+
+    fclose(fptr);
+
+    if (found) {
+        char *delimiter = strchr(found, ':');
+        if (delimiter) {
+            char *file_path = (char *)malloc(strlen(delimiter + 1) + 1);
+            strcpy(file_path, delimiter + 1);
+            file_path[strlen(delimiter + 1)] = '\0';
+            return file_path;
+        }
+    }
+
+    return NULL;
 }

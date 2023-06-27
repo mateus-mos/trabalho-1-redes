@@ -16,17 +16,19 @@
  * @return 0 if the file was sent successfully, -1 otherwise.
  *
  */
-int send_single_file(char *src_path, char *file_name, int socket)
+int send_single_file(char *full_path_to_file, char *file_name, int socket)
 {
     log_message("Sending file...");
 
-    if (src_path == NULL)
+    if (full_path_to_file == NULL)
     {
         perror("src_path is NULL!");
         return -1;
     }
 
-    FILE *file = fopen(src_path, "rb");
+    log_message("Opening file...");
+    full_path_to_file[strcspn(full_path_to_file, "\n")] = '\0';
+    FILE *file = fopen(full_path_to_file, "rb");
 
     if (file == NULL)
     {
@@ -34,7 +36,8 @@ int send_single_file(char *src_path, char *file_name, int socket)
         return -1;
     }
 
-    struct packet *p = create_or_modify_packet(NULL, MAX_FILE_NAME_SIZE, 0, PT_BACKUP_ONE_FILE, src_path);
+    log_message("File opened!");
+    struct packet *p = create_or_modify_packet(NULL, MAX_FILE_NAME_SIZE, 0, PT_BACKUP_ONE_FILE, file_name);
 
     if (p == NULL)
     {
@@ -42,26 +45,25 @@ int send_single_file(char *src_path, char *file_name, int socket)
         return -1;
     }
 
+    log_message("Sending PT_BACKUP_ONE_FILE packet...");
     /* Send packet for start backup single file */
     if (send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
     {
         log_message("Error while trying to reach server!\n");
         return -1;
     }
-
-    log_message("Server reached!");
+    log_message("Response received!");
 
     /* Create buffers */
     uint8_t data_buffer[63];
     struct packet p_buffer;
 
     int file_read_bytes = MAX_DATA_SIZE;
-    long long file_size = get_file_size(src_path);
+    long long file_size = get_file_size(full_path_to_file);
     int packets_quantity = ceil(file_size / (float)(MAX_DATA_SIZE));
 
     #ifdef DEBUG
         log_message("Sending file:");
-        log_message(src_path);
     #endif
 
     int packet_sequence = 1;
@@ -85,7 +87,7 @@ int send_single_file(char *src_path, char *file_name, int socket)
         /* Send packet. */
         if (send_packet_and_wait_for_response(p, &p_buffer, PT_TIMEOUT, socket) != 0)
         {
-            printf("Error while sending file: %s \n", src_path);
+            printf("Error while sending file: %s \n", full_path_to_file);
             fclose(file);
             destroy_packet(p);
             return -1;
@@ -122,8 +124,7 @@ int send_single_file(char *src_path, char *file_name, int socket)
  * @param socket The socket to send the files.
  * @return 0 if the files were sent successfully, -1 otherwise.
  *
- */
-
+*/
 int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket)
 {
     /* Send packet for start backup multiple files */
@@ -179,6 +180,7 @@ int receive_file(char *full_path, int socket)
         perror("Error opening the file");
         return -1;
     }
+    log_message("File opened!");
 
     struct packet packet_buffer;
     struct packet *response = create_or_modify_packet(NULL, 0, 0, PT_ACK, NULL);
@@ -318,13 +320,17 @@ void restore_single_file(char *file_name, int socket)
         return;
     }
 
+    // Send OK packet
+    create_or_modify_packet(p, 0, 0, PT_OK, NULL);
+    send_packet(p, socket);
+
     /* Receive file from Server */
-    char current_directory[100];
-    get_current_directory(current_directory, sizeof(current_directory));
+    char folder_name[] = "/home/mateus/Documents/bcc/trabalho-1-redes/files2/";
     
     char *full_path_to_file = NULL;
-    full_path_to_file = concatenate_strings(current_directory, file_name);
+    full_path_to_file = concatenate_strings(folder_name, file_name);
     
+    printf("full_path_to_file: %s\n", full_path_to_file);
     receive_file(full_path_to_file, socket);
 
     /* Send end restore single file packet */
