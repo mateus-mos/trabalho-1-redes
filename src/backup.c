@@ -370,7 +370,7 @@ void set_server_directory(char *dir_name, int socket)
     }
 
     destroy_packet(p);
-    printf(" Directory configured successfully!\n");
+    // printf(" Directory configured successfully!\n");
 }
 
 // void restore_multiple_files(const char *src_dir, int socket) {

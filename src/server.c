@@ -10,6 +10,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <dirent.h>
 #include "../lib/socket.h"
 #include "../lib/network.h"
 #include "../lib/backup.h"
@@ -33,6 +34,11 @@ int main() {
     struct packet *packet = create_or_modify_packet(NULL, 0, 0, PT_ACK, NULL);
     char *file_name = NULL;
     char *full_path_to_file = NULL;
+    char *dir_name = NULL;
+    DIR* dir;
+    char *full_path_to_dir = NULL;
+
+    
     //int packets_received = 0;
 
     while (1) {
@@ -127,10 +133,31 @@ int main() {
             
             case PT_SET_SERVER_DIR:
                 log_message("SET_SERVER_DIR received!");
-
+                
                 // Send OK
                 create_or_modify_packet(packet, 0, 0, PT_OK, NULL);
                 send_packet(packet, socket); 
+                
+                get_current_directory(current_directory, sizeof(current_directory));
+                printf("\nCurrent directory: %s\n", current_directory);
+
+                dir_name = uint8ArrayToString(buffer.data, buffer.size);
+                printf("Dir name: %s\n", dir_name);
+
+                full_path_to_dir = concatenate_strings(current_directory, dir_name);
+                printf("Full_path_to_dir: %s\n", full_path_to_dir);
+
+                dir = opendir(full_path_to_dir); // change to "requested_dir"
+
+                if(dir){
+                    log_message("Requested directory exists!");
+                }
+                else{
+                    log_message("Directory does not exist!"); 
+                }
+
+                // chdir() || chroot()
+
             default:
                 printf("Invalid packet received!\n");
                 break;
