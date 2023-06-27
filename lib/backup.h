@@ -8,10 +8,10 @@
 
 int send_single_file(char *src_path, char *file_name, int socket);
 int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket);
-void restore_single_file(char *file_name, int socket);
+void restore_single_file(char *file_name, char *file_path, int socket);
 void restore_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket);
 void set_server_directory(char *dir_name, int socket);
-int receive_file(char *file_path, int socket);
+int receive_file(char *file_path,  int socket);
 int receive_multiple_files(int socket);
 
 void cd_local(char *dir);

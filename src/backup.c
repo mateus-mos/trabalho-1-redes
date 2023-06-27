@@ -63,7 +63,8 @@ int send_single_file(char *full_path_to_file, char *file_name, int socket)
     int packets_quantity = ceil(file_size / (float)(MAX_DATA_SIZE));
 
     #ifdef DEBUG
-        log_message("Sending file:");
+        log_message("packets quantity");
+        //log_message(packets_quantity);
     #endif
 
     int packet_sequence = 1;
@@ -72,6 +73,7 @@ int send_single_file(char *full_path_to_file, char *file_name, int socket)
         /* Sometimes the last packet is not full,
          * so we need to know how many bytes we need to read.
          */
+
         if (i == packets_quantity - 1)
         {
             file_read_bytes = file_size % MAX_DATA_SIZE;
@@ -85,6 +87,7 @@ int send_single_file(char *full_path_to_file, char *file_name, int socket)
         create_or_modify_packet(p, file_read_bytes, packet_sequence, PT_DATA, data_buffer);
 
         /* Send packet. */
+        log_message("Sending packet!");
         if (send_packet_and_wait_for_response(p, &p_buffer, PT_TIMEOUT, socket) != 0)
         {
             printf("Error while sending file: %s \n", full_path_to_file);
@@ -128,11 +131,14 @@ int send_single_file(char *full_path_to_file, char *file_name, int socket)
 int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket)
 {
     /* Send packet for start backup multiple files */
+    log_message("Sending PT_BACKUP_MULTIPLE_FILES!");
     struct packet *p = create_or_modify_packet(NULL, 0, 0, PT_BACKUP_MULTIPLE_FILES, NULL);
 
     /* Send packet for start backup multiple files */
     if (send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
         return -1;
+
+    log_message("Response received!");
 
     for (int i = 0; i < files_quantity; i++)
     {
@@ -264,6 +270,10 @@ int receive_multiple_files(int socket)
         {
             file_name = uint8ArrayToString(packet_buffer.data, packet_buffer.size);
             receive_file(file_name, socket);
+
+            // Send OK
+            create_or_modify_packet(&packet_buffer, 0, 0, PT_ACK, NULL);
+            send_packet(&packet_buffer, socket);
         }
         else if (packet_buffer.type == PT_END_GROUP_FILES)
             end_files = 1;
@@ -286,7 +296,7 @@ int receive_multiple_files(int socket)
     return 0;
 }
 
-void restore_single_file(char *file_name, int socket)
+void restore_single_file(char *file_name, char *file_path, int socket)
 {
     struct packet *p = create_or_modify_packet(NULL, MAX_FILE_NAME_SIZE, 0, PT_RESTORE_ONE_FILE, file_name);
 
@@ -324,12 +334,8 @@ void restore_single_file(char *file_name, int socket)
     create_or_modify_packet(p, 0, 0, PT_OK, NULL);
     send_packet(p, socket);
 
-    /* Receive file from Server */
-    // char folder_name[] = "/home/mateus/Documents/bcc/trabalho-1-redes/files2/";
-    char folder_name[] = "/home/leommm/UFPR/2023/Redes1/trabalho-1-redes/files/";
-    
     char *full_path_to_file = NULL;
-    full_path_to_file = concatenate_strings(folder_name, file_name);
+    full_path_to_file = concatenate_strings(file_path, file_name);
     
     printf("full_path_to_file: %s\n", full_path_to_file);
     receive_file(full_path_to_file, socket);

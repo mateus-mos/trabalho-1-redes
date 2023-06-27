@@ -17,17 +17,21 @@
 #include "../lib/socket.h"
 #include "../lib/network.h"
 #include "../lib/backup.h"
+#include "../lib/utils.h"
 
 void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const char delimiter[], int type_flag, int sockfd);
+char *current_dir;
 
 int main()
 {
-    int sockfd = create_socket("lo");
+    int sockfd = create_socket("eno1");
 
     char input[100];
     char *token;
     char files_names[100][MAX_FILE_NAME_SIZE];
     const char delimiter[] = " \n";
+    current_dir = malloc(sizeof(int) * MAX_DATA_SIZE);
+    get_current_directory(current_dir, MAX_DATA_SIZE);
 
     printf("__________________Client Terminal__________________\n");
     printf("--> backup <file_name> \n");
@@ -103,7 +107,7 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
         if(type_flag == BACKUP)
             send_single_file(token, token, sockfd); // (token, token)?
         else if(type_flag == RESTORE)
-            restore_single_file(token, sockfd); 
+            restore_single_file(token, current_dir, sockfd); 
         else if(type_flag == SET_SERVER_DIR)
             set_server_directory(token, sockfd);
     }

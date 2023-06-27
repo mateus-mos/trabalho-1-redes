@@ -44,7 +44,6 @@ int main() {
     while (1) {
         log_message("Waiting for request...");
         listen_packet(&buffer, 9999, socket); 
-        listen_packet(&buffer, 9999, socket); // Remove later (LOOPBACK)
 
         switch(buffer.type){
             case PT_ACK:
