@@ -57,10 +57,10 @@ int send_single_file(char *src_path, int socket)
     long long file_size = get_file_size(src_path);
     int packets_quantity = ceil(file_size / (float)(MAX_DATA_SIZE));
 
-#ifdef DEBUG
-    log_message("Sending file:");
-    log_message(src_path);
-#endif
+    #ifdef DEBUG
+        log_message("Sending file:");
+        log_message(src_path);
+    #endif
 
     int packet_sequence = 1;
     for (int i = 0; i < packets_quantity; i++)
@@ -101,9 +101,9 @@ int send_single_file(char *src_path, int socket)
     create_or_modify_packet(p, 0, 0, PT_END_FILE, NULL);
     if (send_packet_and_wait_for_response(p, &p_buffer, PT_TIMEOUT, socket) != 0)
     {
-#ifdef DEBUG
-        log_message("Couldn't send end file packet!\n");
-#endif
+        #ifdef DEBUG
+                log_message("Couldn't send end file packet!\n");
+        #endif
         destroy_packet(p);
         return -1;
     }
@@ -135,9 +135,9 @@ int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, in
     {
         if (send_single_file(files[i], socket) != 0)
         {
-#ifdef DEBUG
-            log_message("Error while backing up multiple files!");
-#endif
+            #ifdef DEBUG
+                        log_message("Error while backing up multiple files!");
+            #endif
             return -1;
         }
     }
@@ -146,9 +146,9 @@ int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, in
     create_or_modify_packet(p, 0, 0, PT_END_GROUP_FILES, NULL);
     if (send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
     {
-#ifdef DEBUG
-        log_message("Error while sending end backup multiple files packet!");
-#endif
+        #ifdef DEBUG
+                log_message("Error while sending end backup multiple files packet!");
+        #endif
         destroy_packet(p);
         return -1;
     }
@@ -246,10 +246,10 @@ int receive_multiple_files(int socket)
     {
         if (listen_packet(&packet_buffer, PT_TIMEOUT, socket) != 0)
         {
-#ifdef DEBUG
-            log_message("An error ocurred while listening for packets");
-            log_message("Is the server still running?");
-#endif
+            #ifdef DEBUG
+                        log_message("An error ocurred while listening for packets");
+                        log_message("Is the server still running?");
+            #endif
             return -1;
         }
 
@@ -267,11 +267,13 @@ int receive_multiple_files(int socket)
         {
 
             if (file_name != NULL)
+            {
                 free(file_name);
-#ifdef DEBUG
-            log_message("Received unexpected packet type while receiving multiple files");
-            return -1;
-#endif
+            }
+            #ifdef DEBUG
+                        log_message("Received unexpected packet type while receiving multiple files");
+                        return -1;
+            #endif
         }
     }
 
