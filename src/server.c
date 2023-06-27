@@ -53,9 +53,6 @@ int main() {
                 send_packet(packet, socket); 
 
                 file_name = uint8ArrayToString(buffer.data, buffer.size);
-                printf("\nnome do arquivo: %s\n",file_name);
-                printf("\nbuffer data: %s\n", buffer.data);
-
                 full_path_to_file = concatenate_strings(current_directory, file_name);
 
                 if(receive_file(full_path_to_file, socket) == -1){
@@ -87,11 +84,12 @@ int main() {
 
                 // Receive file name
                 file_name = uint8ArrayToString(buffer.data, buffer.size); 
+                full_path_to_file = concatenate_strings(current_directory, file_name);
 
-                printf("\nnome do arquivo: %s\n",file_name);
+                printf("\nnome do arquivo: %s",file_name);
                 printf("\nbuffer data: %s\n", buffer.data);
 
-                if(file_exists(file_name) == 0){
+                if(file_exists(full_path_to_file) == 0){
                     log_message("File does not exist!");
 
                     create_or_modify_packet(packet, 0, 0, PT_ERROR, "File does not exist!");
@@ -100,16 +98,17 @@ int main() {
                     free(file_name);
                     break;
                 }
+                else{
+                    log_message("Requested file exists!");
+                }
 
-                full_path_to_file = concatenate_strings(current_directory, file_name);
-
-                log_message("Receiving file:");
-                log_message(file_name);
-                log_message("Saving to:");
+                log_message("Getting file from:");
                 log_message(full_path_to_file);
+                log_message("Sending to:");
+                log_message(file_name);
 
-                if(send_single_file(full_path_to_file, socket) != 0){
-                    log_message("Error sending file!");
+                if(send_single_file(full_path_to_file, socket) != 0){ 
+                    log_message("Error sending file!"); 
 
                     // Error sending file
                     create_or_modify_packet(packet, 0, 0, PT_ERROR, "Error sending file!");

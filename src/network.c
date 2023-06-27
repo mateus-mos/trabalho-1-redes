@@ -109,6 +109,23 @@ void destroy_packet(struct packet *p)
     free(p);
 }
 
+int send_packet(struct packet *packet, int socket)
+{
+    if(send(socket, packet, sizeof(struct packet), 0) == -1) 
+    {
+        perror("sendto");
+        close(socket);
+        exit(EXIT_FAILURE);
+    } 
+    // struct packet buffer;
+    struct packet buffer;
+    listen_packet(&buffer, PT_TIMEOUT, socket);
+    listen_packet(&buffer, PT_TIMEOUT, socket);
+
+    //shift_bits(packet);
+    return 0;
+}
+
 /* Sends a packet and waits for a ACK or OK.
  * If an NACK is received, the packet is sent again.
  * 
@@ -139,23 +156,6 @@ int send_packet_and_wait_for_response(struct packet *packet, struct packet *resp
             ACK_OK_received = 1;
     }
 
-    return 0;
-}
-
-int send_packet(struct packet *packet, int socket)
-{
-    if(send(socket, packet, sizeof(struct packet), 0) == -1) 
-    {
-        perror("sendto");
-        close(socket);
-        exit(EXIT_FAILURE);
-    } 
-    // struct packet buffer;
-    struct packet buffer;
-    listen_packet(&buffer, PT_TIMEOUT, socket);
-    listen_packet(&buffer, PT_TIMEOUT, socket);
-
-    //shift_bits(packet);
     return 0;
 }
 
