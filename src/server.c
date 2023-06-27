@@ -124,6 +124,13 @@ int main() {
                 free(file_name);
                 free(full_path_to_file);
                 break;
+            
+            case PT_SET_SERVER_DIR:
+                log_message("SET_SERVER_DIR received!");
+
+                // Send OK
+                create_or_modify_packet(packet, 0, 0, PT_OK, NULL);
+                send_packet(packet, socket); 
             default:
                 printf("Invalid packet received!\n");
                 break;

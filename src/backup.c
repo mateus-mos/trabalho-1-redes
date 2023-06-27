@@ -325,7 +325,8 @@ void restore_single_file(char *file_name, int socket)
     send_packet(p, socket);
 
     /* Receive file from Server */
-    char folder_name[] = "/home/mateus/Documents/bcc/trabalho-1-redes/files2/";
+    // char folder_name[] = "/home/mateus/Documents/bcc/trabalho-1-redes/files2/";
+    char folder_name[] = "/home/leommm/UFPR/2023/Redes1/trabalho-1-redes/files/";
     
     char *full_path_to_file = NULL;
     full_path_to_file = concatenate_strings(folder_name, file_name);
@@ -350,6 +351,28 @@ void restore_single_file(char *file_name, int socket)
 void restore_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket)
 {
 }
+
+void set_server_directory(char *dir_name, int socket) 
+{
+    struct packet *p = create_or_modify_packet(NULL, MAX_DATA_SIZE, 0, PT_SET_SERVER_DIR, dir_name);
+
+    if (send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
+    {
+        printf(" Error while sending start set server directory packet!\n"); // erro aqui
+        return;
+    }
+
+    if (listen_packet(p, PT_TIMEOUT, socket) != 0)
+    {
+        log_message("Error while listening for PT_SET_SERVER_DIR packet!");
+        destroy_packet(p);
+        return;
+    }
+
+    destroy_packet(p);
+    printf(" Directory configured successfully!\n");
+}
+
 // void restore_multiple_files(const char *src_dir, int socket) {
 // }
 //

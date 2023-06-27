@@ -1,1 +1,2 @@
-test.txt:/home/mateus/Documents/bcc/trabalho-1-redes/files/test.txt
+test.txt:/home/leommm/UFPR/2023/Redes1/trabalho-1-redes/files/test.txt
+

@@ -32,6 +32,9 @@ int main()
     printf("__________________Client Terminal__________________\n");
     printf("--> backup <file_name> \n");
     printf("--> backup -m <file_name_1> <file_name_2> ... <file_name_n> \n");
+    printf("--> restore <file_name> \n");
+    printf("--> restore -m <file_name_1> <file_name_2> ... <file_name_n> \n");
+
 
     while (1) 
     {
@@ -45,10 +48,12 @@ int main()
 
         printf("\nTOKEN: %s\n", token);
 
-        if (strcmp(token, "backup") == 0) 
+        if (strcmp(token, "backup") == 0) // OR?
             process_command(files_names, token, delimiter, BACKUP, sockfd);
         else if(strcmp(token, "restore") == 0)
             process_command(files_names, token, delimiter, RESTORE,sockfd);
+        else if(strcmp(token, "ssdir") == 0)
+            process_command(files_names, token, delimiter, SET_SERVER_DIR,sockfd);
         else 
             printf("--> Unsupported command: %s\n", token);
     }
@@ -94,10 +99,12 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
     } 
     else
     {
-        printf("Single-file command: %s\n", token);
+        printf("Single-file command: %s\n", token); // can be a "cd"
         if(type_flag == BACKUP)
-            send_single_file(token, token, sockfd);
+            send_single_file(token, token, sockfd); // (token, token)?
         else if(type_flag == RESTORE)
             restore_single_file(token, sockfd); 
+        else if(type_flag == SET_SERVER_DIR)
+            set_server_directory(token, sockfd);
     }
 }
