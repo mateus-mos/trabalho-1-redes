@@ -34,9 +34,6 @@ int main() {
     struct packet *packet = create_or_modify_packet(NULL, 0, 0, PT_ACK, NULL);
     char *file_name = NULL;
     char *full_path_to_file = NULL;
-    char *dir_name = NULL;
-    DIR* dir;
-    char *full_path_to_dir = NULL;
     
     //int packets_received = 0;
 
@@ -140,31 +137,24 @@ int main() {
             case PT_SET_SERVER_DIR:
                 log_message("SET_SERVER_DIR received!");
                 
-                // Send OK
-                create_or_modify_packet(packet, 0, 0, PT_OK, NULL);
-                send_packet(packet, socket); 
-                
-                get_current_directory(current_directory, sizeof(current_directory));
-                printf("\nCurrent directory: %s\n", current_directory);
+                char *ssdir_command= uint8ArrayToString(buffer.data, buffer.size);
+                log_message("ssdir command:");
+                log_message(ssdir_command);
 
-                dir_name = uint8ArrayToString(buffer.data, buffer.size);
-                printf("Dir name: %s\n", dir_name);
-
-                full_path_to_dir = concatenate_strings(current_directory, dir_name);
-                printf("Full_path_to_dir: %s\n", full_path_to_dir);
-
-                dir = opendir(full_path_to_dir); // change to "requested_dir"
-
-                if(dir == NULL)
+                if(chdir(ssdir_command) != 0)
                 {
-                    log_message("Requested directory exists!");
+                    log_message("Error changing file!");
+                    create_or_modify_packet(packet, 0, 0, PT_ERROR, NULL);
+                    send_packet(packet, socket);
                 }
                 else
                 {
-                    log_message("Directory does not exist!"); 
+                    log_message("Dir changed:");
+                    log_message(ssdir_command);
+                    // Send OK
+                    create_or_modify_packet(packet, MAX_DATA_SIZE, 0, PT_OK,  ssdir_command);
+                    send_packet(packet, socket); 
                 }
-
-                // chdir() || chroot()
                 break;
             default:
                 printf("Invalid packet received!\n");

@@ -11,17 +11,19 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <limits.h>
 #include "../lib/socket.h"
 #include "../lib/network.h"
 #include "../lib/backup.h"
 #include "../lib/utils.h"
 #include "../lib/log.h"
+#define PATH_MAX 100
 
+
+void change_directory(char *token, const char delimiter[]);
 void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const char delimiter[], int type_flag, int sockfd);
 char *current_dir;
+
 
 int main()
 {
@@ -43,7 +45,7 @@ int main()
 
     while (1) 
     {
-        printf("client: ");
+        printf("%s:",current_dir);
         fgets(input, sizeof(input), stdin);
 
         token = strtok(input, delimiter);
@@ -51,20 +53,35 @@ int main()
             continue;
         }
 
-        printf("\nTOKEN: %s\n", token);
-
         if (strcmp(token, "backup") == 0) // OR?
             process_command(files_names, token, delimiter, BACKUP, sockfd);
         else if(strcmp(token, "restore") == 0)
             process_command(files_names, token, delimiter, RESTORE,sockfd);
         else if(strcmp(token, "ssdir") == 0)
             process_command(files_names, token, delimiter, SET_SERVER_DIR,sockfd);
+        else if(strcmp(token, "cd") == 0)
+        {
+            change_directory(token, delimiter);
+            get_current_directory(current_dir, MAX_DATA_SIZE);
+        }
         else 
             printf("--> Unsupported command: %s\n", token);
     }
 
     return 0;
 }
+
+
+void change_directory(char *token, const char delimiter[]) 
+{
+    token = strtok(NULL, delimiter);
+
+    if(chdir(token) != 0)
+    {
+        printf(" The directory doesn't exist!\n");
+    }
+}
+
 
 void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const char delimiter[], int type_flag, int sockfd)
 {
@@ -126,7 +143,7 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
         if(type_flag == BACKUP)
             send_single_file(token, token, sockfd); // (token, token)?
         else if(type_flag == RESTORE)
-            restore_single_file(token, current_dir, sockfd); 
+            restore_single_file(token, token, sockfd); 
         else if(type_flag == SET_SERVER_DIR)
             set_server_directory(token, sockfd);
     }

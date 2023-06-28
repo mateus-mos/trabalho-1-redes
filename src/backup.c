@@ -347,7 +347,7 @@ void restore_single_file(char *file_name, char *file_path, int socket)
     create_or_modify_packet(p, 0, 0, PT_END_FILE, NULL);
     if (send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
     {
-        printf(" Error while sending end restore single file packet!\n");
+        //printf(" Error while sending end restore single file packet!\n");
         destroy_packet(p);
         return;
     }

@@ -6,6 +6,7 @@
         "stdio.h": "c",
         "log.h": "c",
         "stdlib.h": "c",
-        "ioctl.h": "c"
+        "ioctl.h": "c",
+        "network.h": "c"
     }
 }

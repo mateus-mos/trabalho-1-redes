@@ -24,7 +24,7 @@ Protocolo das mensagens (baseado no Kermit)
 
 | Tipo 	|          Descriçao          	|
 |:----:	|:---------------------------:	|
-| 0000 	|      Backup de 1 arquivo  	  |
+| 0000 	|      Backup de 1 arquivo      |
 | 0001 	|  Backup mais de um arquivo  	|
 | 0010 	|      Recupera 1 arquivo     	|
 | 0011 	| Recupera mais de um arquivo 	|
