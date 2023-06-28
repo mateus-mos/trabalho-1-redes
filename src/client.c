@@ -18,6 +18,7 @@
 #include "../lib/network.h"
 #include "../lib/backup.h"
 #include "../lib/utils.h"
+#include "../lib/log.h"
 
 void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const char delimiter[], int type_flag, int sockfd);
 char *current_dir;
@@ -98,8 +99,8 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
         }
         else if(type_flag == RESTORE)
         {
-            struct *packet = create_or_modify_packet(NULL, 0, 0, PT_RESTORE_FILES, NULL);
-            if(send_packet_and_wait_for_response(packet, packet, PT_TIMEOUT, socket))
+            struct packet *packet = create_or_modify_packet(NULL, 0, 0, PT_RESTORE_FILES, NULL);
+            if(send_packet_and_wait_for_response(packet, packet, PT_TIMEOUT, sockfd))
             {
                 log_message("Timeout error!");
                 return;
@@ -107,11 +108,11 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
 
             for(int j = 0; j < i; j++)
             {
-                restore_single_file(files_names[j], current_dir, socket);
+                restore_single_file(files_names[j], current_dir, sockfd);
             }
 
-            struct *packet = create_or_modify_packet(packet, 0, 0, PT_END_GROUP_FILES, NULL);
-            if(send_packet_and_wait_for_response(packet, packet, PT_TIMEOUT, socket))
+            create_or_modify_packet(packet, 0, 0, PT_END_GROUP_FILES, NULL);
+            if(send_packet_and_wait_for_response(packet, packet, PT_TIMEOUT, sockfd))
             {
                 log_message("Timeout error!");
                 return;

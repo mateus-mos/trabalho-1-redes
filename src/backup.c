@@ -357,9 +357,9 @@ void restore_single_file(char *file_name, char *file_path, int socket)
     return;
 }
 
-void restore_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket)
-{
-}
+//void restore_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket)
+//{
+//}
 
 void set_server_directory(char *dir_name, int socket) 
 {
@@ -382,8 +382,8 @@ void set_server_directory(char *dir_name, int socket)
     // printf(" Directory configured successfully!\n");
 }
 
-void restore_multiple_files(const char *src_dir, int socket) {
-}
+//void restore_multiple_files(const char *src_dir, int socket) {
+//}
 
 //
 // void set_server_directory(const char *dir) {

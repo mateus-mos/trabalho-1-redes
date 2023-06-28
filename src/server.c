@@ -155,15 +155,17 @@ int main() {
 
                 dir = opendir(full_path_to_dir); // change to "requested_dir"
 
-                if(dir){
+                if(dir == NULL)
+                {
                     log_message("Requested directory exists!");
                 }
-                else{
+                else
+                {
                     log_message("Directory does not exist!"); 
                 }
 
                 // chdir() || chroot()
-
+                break;
             default:
                 printf("Invalid packet received!\n");
                 break;
