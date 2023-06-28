@@ -98,7 +98,25 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
         }
         else if(type_flag == RESTORE)
         {
-            restore_multiple_files(files_names, i, sockfd);
+            struct *packet = create_or_modify_packet(NULL, 0, 0, PT_RESTORE_FILES, NULL);
+            if(send_packet_and_wait_for_response(packet, packet, PT_TIMEOUT, socket))
+            {
+                log_message("Timeout error!");
+                return;
+            }
+
+            for(int j = 0; j < i; j++)
+            {
+                restore_single_file(files_names[j], current_dir, socket);
+            }
+
+            struct *packet = create_or_modify_packet(packet, 0, 0, PT_END_GROUP_FILES, NULL);
+            if(send_packet_and_wait_for_response(packet, packet, PT_TIMEOUT, socket))
+            {
+                log_message("Timeout error!");
+                return;
+            }
+            //restore_multiple_files(files_names, i, sockfd);
         }
     } 
     else

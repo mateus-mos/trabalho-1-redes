@@ -86,8 +86,6 @@ int send_single_file(char *full_path_to_file, char *file_name, int socket)
         /* Put read data into packet. */
         create_or_modify_packet(p, file_read_bytes, packet_sequence, PT_DATA, data_buffer);
 
-        /* Send packet. */
-        log_message("Sending packet!");
         if (send_packet_and_wait_for_response(p, &p_buffer, PT_TIMEOUT, socket) != 0)
         {
             printf("Error while sending file: %s \n", full_path_to_file);
@@ -269,14 +267,19 @@ int receive_multiple_files(int socket)
         if (packet_buffer.type == PT_BACKUP_ONE_FILE)
         {
             file_name = uint8ArrayToString(packet_buffer.data, packet_buffer.size);
-            receive_file(file_name, socket);
 
             // Send OK
             create_or_modify_packet(&packet_buffer, 0, 0, PT_ACK, NULL);
             send_packet(&packet_buffer, socket);
+
+            receive_file(file_name, socket);
         }
         else if (packet_buffer.type == PT_END_GROUP_FILES)
+        {
+            create_or_modify_packet(&packet_buffer, 0, 0, PT_OK, NULL);
+            send_packet(&packet_buffer, socket);
             end_files = 1;
+        }
         else
         {
 
@@ -315,7 +318,7 @@ void restore_single_file(char *file_name, char *file_path, int socket)
         char *error_msg = uint8ArrayToString(p->data, p->size);
 
         log_message("Error while restoring file!");
-        log_message(error_msg);
+        log_message("This file doesn't exist in the server!");
 
         destroy_packet(p);
         free(error_msg);
@@ -379,8 +382,9 @@ void set_server_directory(char *dir_name, int socket)
     // printf(" Directory configured successfully!\n");
 }
 
-// void restore_multiple_files(const char *src_dir, int socket) {
-// }
+void restore_multiple_files(const char *src_dir, int socket) {
+}
+
 //
 // void set_server_directory(const char *dir) {
 // }

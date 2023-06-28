@@ -21,7 +21,7 @@
 
 int main() {
     log_message("Creating socket...");
-    int socket = create_socket("lo");
+    int socket = create_socket("enp7s0");
     log_message("Socket created!");
     log_message("Server up and running!");
 
@@ -37,7 +37,6 @@ int main() {
     char *dir_name = NULL;
     DIR* dir;
     char *full_path_to_dir = NULL;
-
     
     //int packets_received = 0;
 
@@ -129,7 +128,15 @@ int main() {
                 free(file_name);
                 free(full_path_to_file);
                 break;
-            
+
+            case PT_RESTORE_FILES:
+                create_or_modify_packet(packet, 0, 0, PT_OK, NULL);
+                send_packet(packet, socket);
+                break;
+            case PT_END_GROUP_FILES:
+                create_or_modify_packet(packet, 0, 0, PT_OK, NULL);
+                send_packet(packet, socket);
+                break;
             case PT_SET_SERVER_DIR:
                 log_message("SET_SERVER_DIR received!");
                 
