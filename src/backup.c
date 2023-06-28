@@ -371,12 +371,15 @@ void set_server_directory(char *dir_name, int socket)
         return;
     }
 
-    if (listen_packet(p, PT_TIMEOUT, socket) != 0)
+    if(p->type == PT_ERROR)
     {
-        log_message("Error while listening for PT_SET_SERVER_DIR packet!");
-        destroy_packet(p);
+        log_message("Directory doesn't exist!");
         return;
     }
+
+    char *server_dir = uint8ArrayToString(p->data, p->size);
+    log_message("Current server dir:");
+    log_message(server_dir);
 
     destroy_packet(p);
     // printf(" Directory configured successfully!\n");
