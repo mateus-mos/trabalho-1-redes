@@ -1,4 +1,6 @@
 #include "../lib/utils.h"
+#include <dirent.h>
+
 
 int file_info_exists(const char *output_file, const char *file_name, const char *file_path);
 
@@ -163,4 +165,44 @@ char *get_file_path(char *log_file, char *file_name) {
     }
 
     return NULL;
+}
+
+void list_files(const char* directory) {
+    DIR* dir;
+    struct dirent* entry;
+
+    // Open the directory
+    dir = opendir(directory);
+
+    if (dir == NULL) {
+        printf("Error opening directory.\n");
+        return;
+    }
+
+    // Store file names in an array
+    char files[100][256];
+    int fileCount = 0;
+
+    // Iterate over directory entries
+    while ((entry = readdir(dir)) != NULL) {
+        sprintf(files[fileCount], "%s", entry->d_name);
+        fileCount++;
+    }
+
+    // Calculate number of columns
+    int numColumns = 3;  // Adjust the number of columns as desired
+
+    // Calculate number of rows
+    int numRows = (fileCount + numColumns - 1) / numColumns;
+
+    // Print files in columns
+    for (int i = 0; i < numRows; i++) {
+        for (int j = i; j < fileCount; j += numRows) {
+            printf("%-30s", files[j]);  // Adjust the spacing as desired
+        }
+        printf("\n");
+    }
+
+    // Close the directory
+    closedir(dir);
 }

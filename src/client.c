@@ -36,16 +36,21 @@ int main()
     current_dir = malloc(sizeof(int) * MAX_DATA_SIZE);
     get_current_directory(current_dir, MAX_DATA_SIZE);
 
-    printf("__________________Client Terminal__________________\n");
-    printf("--> backup <file_name> \n");
-    printf("--> backup -m <file_name_1> <file_name_2> ... <file_name_n> \n");
-    printf("--> restore <file_name> \n");
-    printf("--> restore -m <file_name_1> <file_name_2> ... <file_name_n> \n");
+    #include <stdio.h>
 
+    printf("Welcome to the Backup System!\n\n");
+    printf("Available commands:\n");
+    printf("- backup <filename>: Backup single file.\n");
+    printf("- backup -m <filename> <filename> ... : Backup multiples files.\n");
+    printf("- restore <filename>: Restore single file.\n");
+    printf("- restore -m <filename> <filename> ...: Restore multiples files.\n");
+    printf("- help: Show available commands.\n");
+    printf("- exit: Exit the program.\n");
+    printf("\n");
 
     while (1) 
     {
-        printf("%s:",current_dir);
+        printf("client:%s$ ",current_dir);
         fgets(input, sizeof(input), stdin);
 
         token = strtok(input, delimiter);
@@ -54,15 +59,30 @@ int main()
         }
 
         if (strcmp(token, "backup") == 0) // OR?
+        {
             process_command(files_names, token, delimiter, BACKUP, sockfd);
+        }
         else if(strcmp(token, "restore") == 0)
+        {
             process_command(files_names, token, delimiter, RESTORE,sockfd);
+        }
         else if(strcmp(token, "ssdir") == 0)
+        {
             process_command(files_names, token, delimiter, SET_SERVER_DIR,sockfd);
+        }
         else if(strcmp(token, "cd") == 0)
         {
             change_directory(token, delimiter);
             get_current_directory(current_dir, MAX_DATA_SIZE);
+        }
+        else if(strcmp(token, "ls") == 0)
+        {
+            list_files(current_dir);
+        }
+        else if(strcmp(token, "exit") == 0)
+        {
+            printf("Goodbye!\n");
+            return 0;
         }
         else 
             printf("--> Unsupported command: %s\n", token);
