@@ -149,9 +149,9 @@ int main() {
                 }
                 else
                 {
-                    log_message("Dir changed:");
-                    log_message(ssdir_command);
                     get_current_directory(current_directory, sizeof(current_directory));
+                    log_message("New directory:");
+                    log_message(current_directory);
                     // Send OK
                     create_or_modify_packet(packet, MAX_DATA_SIZE, 0, PT_OK, current_directory);
                     send_packet(packet, socket); 
