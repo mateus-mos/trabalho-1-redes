@@ -64,8 +64,6 @@ int main() {
                     break;
                 }
 
-                save_file_info(file_name, full_path_to_file, FILE_MAP_NAME_TO_PATH);
-
                 break;
             case PT_BACKUP_MULTIPLE_FILES:
                 log_message("BACKUP_MULTIPLE_FILES received!");
@@ -83,9 +81,9 @@ int main() {
 
                 // Receive file name
                 file_name = uint8ArrayToString(buffer.data, buffer.size); 
-                full_path_to_file = get_file_path(FILE_MAP_NAME_TO_PATH, file_name);
 
-                if(full_path_to_file == NULL){
+                if (access(file_name, F_OK) == 0) {
+                   // file exists
                     log_message("File does not exist!");
 
                     create_or_modify_packet(packet, 0, 0, PT_ERROR, "File does not exist!");
@@ -107,6 +105,8 @@ int main() {
                 log_message(full_path_to_file);
                 log_message("Sending to:");
                 log_message(file_name);
+
+                full_path_to_file = concatenate_strings(current_directory, file_name);
 
                 if(send_single_file(full_path_to_file, file_name, socket) != 0){ 
                     log_message("Error sending file!"); 
