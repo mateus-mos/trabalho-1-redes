@@ -163,11 +163,22 @@ int main() {
                 log_message("File:");
                 char *full_path = get_file_path(FILE_MAP_NAME_TO_PATH, file_n);
 
-                if(full_path == NULL || file_to_md5(full_path, md5) == -1)
+                if(full_path == NULL)
                 {
-                    log_message("File does not existed!");
+                    log_message("File does not exist!");
                     create_or_modify_packet(packet, 0, 0, PT_ERROR, NULL);
                     send_packet(packet, socket);
+                    log_message("Sending error message to client...");
+                    continue;
+                }
+
+                if(file_to_md5(full_path, md5) == -1)
+                 {
+                    log_message("File does not exist!");
+                    create_or_modify_packet(packet, 0, 0, PT_ERROR, NULL);
+                    send_packet(packet, socket);
+                    log_message("Sending error message to client...");
+                    continue;
                 }
 
                 log_message("Sending md5 for client...");
