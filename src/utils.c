@@ -136,38 +136,6 @@ void save_file_info(char *file_name, char *file_path, char *output_file) {
     printf("File information saved successfully.\n");
 }
 
-char *get_file_path(char *log_file, char *file_name) {
-    FILE *fptr;
-    char line[1024];
-    char *found = NULL;
-
-    fptr = fopen(log_file, "r");
-    if (fptr == NULL) {
-        printf("Error opening log file!\n");
-        return NULL;
-    }
-
-    while (fgets(line, sizeof(line), fptr)) {
-        if ((found = strstr(line, file_name)) != NULL) {
-            break;
-        }
-    }
-
-    fclose(fptr);
-
-    if (found) {
-        char *delimiter = strchr(found, ':');
-        if (delimiter) {
-            char *file_path = (char *)malloc(strlen(delimiter + 1) + 1);
-            strcpy(file_path, delimiter + 1);
-            file_path[strlen(delimiter + 1) - 1] = '\0';
-            return file_path;
-        }
-    }
-
-    return NULL;
-}
-
 void list_files(const char* directory) {
     DIR* dir;
     struct dirent* entry;

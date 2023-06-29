@@ -161,19 +161,19 @@ int main() {
                 char *file_n = uint8ArrayToString(buffer.data, buffer.size);
                 log_message("File:");
                 log_message(file_n);
-                char *full_path = get_file_path(FILE_MAP_NAME_TO_PATH, file_n);
-                log_message(full_path);
+                full_path_to_file = concatenate_strings(current_directory, file_n);
 
-                if(full_path == NULL)
-                {
+                if (access(file_name, F_OK) == 0) {
+                   // file exists
                     log_message("File does not exist!");
                     create_or_modify_packet(packet, 0, 0, PT_ERROR, NULL);
                     send_packet(packet, socket);
                     log_message("Sending error message to client...");
+                    free(full_path_to_file);
                     continue;
                 }
 
-                if(file_to_md5(full_path, md5) == -1)
+                if(file_to_md5(full_path_to_file, md5) == -1)
                  {
                     log_message("File does not exist!");
                     create_or_modify_packet(packet, 0, 0, PT_ERROR, NULL);
@@ -185,7 +185,6 @@ int main() {
                 log_message("Sending md5 for client...");
 
                 create_or_modify_packet(packet, MAX_DATA_SIZE, 0, PT_MD5, md5);
-                log_message(packet->data);
                 send_packet(packet, socket);
                 break;
             default:
