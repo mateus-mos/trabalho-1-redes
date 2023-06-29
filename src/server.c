@@ -27,7 +27,7 @@ int main() {
 
     char current_directory[100];
     get_current_directory(current_directory, sizeof(current_directory));
-    strcat(current_directory, "files/");
+    strcat(current_directory, "/");
 
 
     struct packet buffer;
@@ -151,8 +151,9 @@ int main() {
                 {
                     log_message("Dir changed:");
                     log_message(ssdir_command);
+                    get_current_directory(current_directory, sizeof(current_directory));
                     // Send OK
-                    create_or_modify_packet(packet, MAX_DATA_SIZE, 0, PT_OK,  ssdir_command);
+                    create_or_modify_packet(packet, MAX_DATA_SIZE, 0, PT_OK, current_directory);
                     send_packet(packet, socket); 
                 }
                 break;
