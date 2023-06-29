@@ -156,11 +156,11 @@ char *get_file_path(char *log_file, char *file_name) {
     fclose(fptr);
 
     if (found) {
-        char *delimiter = strchr(found, '/');
+        char *delimiter = strchr(found, ':');
         if (delimiter) {
-            char *file_path = (char *)malloc(strlen(delimiter));
-            strcpy(file_path, delimiter);
-            file_path[strlen(delimiter) - 1] = '\0';
+            char *file_path = (char *)malloc(strlen(delimiter + 1) + 1);
+            strcpy(file_path, delimiter + 1);
+            file_path[strlen(delimiter + 1) - 1] = '\0';
             return file_path;
         }
     }
