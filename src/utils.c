@@ -144,7 +144,7 @@ char *get_file_path(char *log_file, char *file_name) {
     fptr = fopen(log_file, "r");
     if (fptr == NULL) {
         printf("Error opening log file!\n");
-        exit(1);
+        return NULL;
     }
 
     while (fgets(line, sizeof(line), fptr)) {
