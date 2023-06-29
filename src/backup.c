@@ -412,6 +412,11 @@ void verify_file_md5(char *file_name, int socket)
         return;
     }
 
+    if(packet->type == PT_ERROR)
+    {
+        printf("This files does not exist!\n");
+        return;
+    }
     printf("MD5 from server received!\n");
     printf("MD5 server: %s\n", packet->data);
     printf("MD5 local: %s\n", md5);
