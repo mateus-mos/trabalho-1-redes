@@ -16,19 +16,19 @@
  * @return 0 if the file was sent successfully, -1 otherwise.
  *
  */
-int send_single_file(char *full_path_to_file, char *file_name, int socket)
+int send_single_file(char *file_name, int socket)
 {
     log_message("Sending file...");
 
-    if (full_path_to_file == NULL)
+    if (file_name == NULL)
     {
         perror("src_path is NULL!");
         return -1;
     }
 
     log_message("Opening file...");
-    full_path_to_file[strcspn(full_path_to_file, "\n")] = '\0';
-    FILE *file = fopen(full_path_to_file, "rb");
+    //full_path_to_file[strcspn(full_path_to_file, "\n")] = '\0';
+    FILE *file = fopen(file_name, "rb");
 
     if (file == NULL)
     {
@@ -37,7 +37,7 @@ int send_single_file(char *full_path_to_file, char *file_name, int socket)
     }
 
     log_message("File opened!");
-    struct packet *p = create_or_modify_packet(NULL, MAX_FILE_NAME_SIZE, 0, PT_BACKUP_ONE_FILE, file_name);
+    struct packet *p = create_or_modify_packet(NULL, MAX_DATA_SIZE, 0, PT_BACKUP_ONE_FILE, file_name);
 
     if (p == NULL)
     {
@@ -59,7 +59,7 @@ int send_single_file(char *full_path_to_file, char *file_name, int socket)
     struct packet p_buffer;
 
     int file_read_bytes = MAX_DATA_SIZE;
-    long long file_size = get_file_size(full_path_to_file);
+    long long file_size = get_file_size(file_name);
     int packets_quantity = ceil(file_size / (float)(MAX_DATA_SIZE));
 
 #ifdef DEBUG
@@ -88,7 +88,7 @@ int send_single_file(char *full_path_to_file, char *file_name, int socket)
 
         if (send_packet_and_wait_for_response(p, &p_buffer, PT_TIMEOUT, socket) != 0)
         {
-            printf("Error while sending file: %s \n", full_path_to_file);
+            printf("Error while sending file: %s \n", file_name);
             fclose(file);
             destroy_packet(p);
             return -1;
@@ -140,7 +140,7 @@ int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, in
 
     for (int i = 0; i < files_quantity; i++)
     {
-        if (send_single_file(files[i], files[i], socket) != 0)
+        if (send_single_file(files[i], socket) != 0)
         {
 #ifdef DEBUG
             log_message("Error while backing up multiple files!");
@@ -417,7 +417,6 @@ void verify_file_md5(char *file_name, int socket)
         printf("This files does not exist!\n");
         return;
     }
-    printf("MD5 from server received!\n");
     printf("MD5 server: %s\n", packet->data);
     printf("MD5 local: %s\n", md5);
 

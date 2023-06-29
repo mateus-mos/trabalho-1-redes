@@ -21,7 +21,7 @@
 
 int main() {
     log_message("Creating socket...");
-    int socket = create_socket("enp7s0");
+    int socket = create_socket("eno1");
     log_message("Socket created!");
     log_message("Server up and running!");
 
@@ -54,9 +54,9 @@ int main() {
                 send_packet(packet, socket); 
 
                 file_name = uint8ArrayToString(buffer.data, buffer.size);
-                full_path_to_file = concatenate_strings(current_directory, file_name);
+                //full_path_to_file = concatenate_strings(current_directory, file_name);
 
-                if(receive_file(full_path_to_file, socket) == -1){
+                if(receive_file(file_name, socket) == -1){
                     log_message("Error receiving file!");
                     create_or_modify_packet(packet, 0, 0, PT_ERROR, "Error receiving file!");
                     send_packet(packet, socket); // send ERROR
@@ -82,8 +82,7 @@ int main() {
                 // Receive file name
                 file_name = uint8ArrayToString(buffer.data, buffer.size); 
 
-                if (access(file_name, F_OK) == 0) {
-                   // file exists
+                if (access(file_name, F_OK) != 0) {
                     log_message("File does not exist!");
 
                     create_or_modify_packet(packet, 0, 0, PT_ERROR, "File does not exist!");
@@ -101,14 +100,10 @@ int main() {
                 create_or_modify_packet(packet, 0, 0, PT_OK, NULL);
                 send_packet(packet, socket); 
 
-                log_message("Getting file from:");
-                log_message(full_path_to_file);
-                log_message("Sending to:");
+                log_message("Sending:");
                 log_message(file_name);
 
-                full_path_to_file = concatenate_strings(current_directory, file_name);
-
-                if(send_single_file(full_path_to_file, file_name, socket) != 0){ 
+                if(send_single_file(file_name, socket) != 0){ 
                     log_message("Error sending file!"); 
 
                     // Error sending file
@@ -158,13 +153,12 @@ int main() {
             case PT_VERIFY_BACKUP:
                 log_message("PT_VERIFY_BACKUP received!");
                 char md5[MAX_PACKET_SIZE];
-                char *file_n = uint8ArrayToString(buffer.data, buffer.size);
+                file_name = uint8ArrayToString(buffer.data, buffer.size);
                 log_message("File:");
-                log_message(file_n);
-                full_path_to_file = concatenate_strings(current_directory, file_n);
+                log_message(file_name);
+                //ull_path_to_file = concatenate_strings(current_directory, file_n);
 
-                if (access(file_name, F_OK) == 0) {
-                   // file exists
+                if (access(file_name, F_OK) != 0) {
                     log_message("File does not exist!");
                     create_or_modify_packet(packet, 0, 0, PT_ERROR, NULL);
                     send_packet(packet, socket);
@@ -173,7 +167,7 @@ int main() {
                     continue;
                 }
 
-                if(file_to_md5(full_path_to_file, md5) == -1)
+                if(file_to_md5(file_name, md5) == -1)
                  {
                     log_message("File does not exist!");
                     create_or_modify_packet(packet, 0, 0, PT_ERROR, NULL);

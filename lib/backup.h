@@ -7,7 +7,7 @@
 #define SET_SERVER_DIR 2
 #define VERIFY 3
 
-int send_single_file(char *src_path, char *file_name, int socket);
+int send_single_file(char *file_name, int socket);
 int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket);
 void restore_single_file(char *file_name, char *file_path, int socket);
 //void restore_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket);
