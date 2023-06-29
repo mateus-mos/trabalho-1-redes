@@ -158,7 +158,7 @@ char *get_file_path(char *log_file, char *file_name) {
     if (found) {
         char *delimiter = strchr(found, '/');
         if (delimiter) {
-            char *file_path = (char *)malloc(strlen(delimiter + 1) + 1);
+            char *file_path = (char *)malloc(strlen(delimiter));
             strcpy(file_path, delimiter);
             file_path[strlen(delimiter) - 1] = '\0';
             return file_path;
