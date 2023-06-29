@@ -146,12 +146,14 @@ int send_packet_and_wait_for_response(struct packet *packet, struct packet *resp
         //log_message("Response received!");
 
 
-        if(listen_response == -2) 
-            return -2;
-        else if(listen_response == -1) 
+        if(listen_response == -1)
+        {
             return -1;
-        if(response->type == PT_ACK || response->type == PT_OK || response->type == PT_ERROR)
+        } 
+        else if(response->type == PT_ACK || response->type == PT_OK || response->type == PT_ERROR)
+        {
             ACK_OK_received = 1;
+        }
     }
 
     return 0;

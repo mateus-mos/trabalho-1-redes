@@ -13,8 +13,8 @@ Protocolo das mensagens (baseado no Kermit)
 
 - [X] Backup de 1 arquivo
 - [X] Backup mais de um arquivo (verificar se funciona)
-- [ ] Recupera 1 arquivo
-- [ ] Recupera mais de um arquivo
+- [X] Recupera 1 arquivo
+- [X] Recupera mais de um arquivo
 - [ ] Escolhe diretorio servidor
 - [ ] Verifica backup
 

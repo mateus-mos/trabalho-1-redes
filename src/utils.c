@@ -1,6 +1,7 @@
 #include "../lib/utils.h"
 #include <dirent.h>
-
+#include <openssl/evp.h>
+#define BUFSIZE 1024
 
 int file_info_exists(const char *output_file, const char *file_name, const char *file_path);
 
@@ -205,4 +206,35 @@ void list_files(const char* directory) {
 
     // Close the directory
     closedir(dir);
+}
+
+int file_to_md5(const char* path, char* md5) {
+    FILE* file = fopen(path, "rb");
+    if(!file) return -1;
+
+    EVP_MD_CTX *mdctx;
+    const EVP_MD *md;
+    unsigned char md_value[EVP_MAX_MD_SIZE];
+    unsigned int md_len, i;
+
+    OpenSSL_add_all_digests();
+
+    md = EVP_get_digestbyname("md5");
+
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, md, NULL);
+
+    unsigned char data[BUFSIZE];
+    size_t bytes;
+    while((bytes = fread(data, 1, BUFSIZE, file)) != 0)
+        EVP_DigestUpdate(mdctx, data, bytes);
+
+    EVP_DigestFinal_ex(mdctx, md_value, &md_len);
+    EVP_MD_CTX_free(mdctx);
+
+    for(i = 0; i < md_len; i++)
+        sprintf(&md5[i*2], "%02x", md_value[i]);
+
+    fclose(file);
+    return 0;
 }

@@ -27,8 +27,7 @@ int main() {
 
     char current_directory[100];
     get_current_directory(current_directory, sizeof(current_directory));
-    strcat(current_directory, "files/");
-
+    strcat(current_directory, "/");
 
     struct packet buffer;
     struct packet *packet = create_or_modify_packet(NULL, 0, 0, PT_ACK, NULL);
@@ -155,6 +154,25 @@ int main() {
                     create_or_modify_packet(packet, MAX_DATA_SIZE, 0, PT_OK,  ssdir_command);
                     send_packet(packet, socket); 
                 }
+                break;
+            case PT_VERIFY_BACKUP:
+                char md5[MAX_PACKET_SIZE];
+                log_message("PT_VERIFY_BACKUP received!");
+                char *file_n = uint8ArrayToString(packet->data, MAX_PACKET_SIZE);
+                log_message("File:");
+                char *full_path = get_file_path(FILE_MAP_NAME_TO_PATH, file_n);
+
+                if(full_path == NULL || file_to_md5(full_path, md5) == -1)
+                {
+                    log_message("File does not existed!");
+                    create_or_modify_packet(packet, 0, 0, PT_ERROR, NULL);
+                    send_packet(packet, socket);
+                }
+
+                log_message("Sending md5 for client...");
+
+                create_or_modify_packet(packet, MAX_PACKET_SIZE, 0, PT_MD5, md5);
+                send_packet(packet, socket);
                 break;
             default:
                 printf("Invalid packet received!\n");

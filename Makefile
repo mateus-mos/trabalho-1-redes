@@ -10,10 +10,10 @@ debug: FLAGS += -DDEBUG -g
 debug: all
 
 client: client.o socket.o network.o backup.o utils.o log.o
-		gcc $(FLAGS) obj/log.o obj/backup.o obj/client.o obj/socket.o obj/network.o obj/utils.o -o $(BIN_DIR)/client -lm
+		gcc $(FLAGS) obj/log.o obj/backup.o obj/client.o obj/socket.o obj/network.o obj/utils.o -o $(BIN_DIR)/client -lm -lssl -lcrypto
 
 server: server.o socket.o network.o backup.o log.o utils.o
-		gcc $(FLAGS) obj/server.o obj/socket.o obj/network.o obj/backup.o obj/log.o obj/utils.o -o $(BIN_DIR)/server -lm
+		gcc $(FLAGS) obj/server.o obj/socket.o obj/network.o obj/backup.o obj/log.o obj/utils.o -o $(BIN_DIR)/server -lm -lssl -lcrypto
 
 server.o: server.c
 		gcc $(FLAGS) -c src/server.c -o obj/server.o

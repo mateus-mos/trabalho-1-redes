@@ -70,6 +70,10 @@ int main()
         {
             process_command(files_names, token, delimiter, SET_SERVER_DIR,sockfd);
         }
+        else if(strcmp(token, "verify") == 0)
+        {
+            process_command(files_names, token, delimiter, VERIFY, sockfd);
+        }
         else if(strcmp(token, "cd") == 0)
         {
             change_directory(token, delimiter);
@@ -159,11 +163,12 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
     } 
     else
     {
-        printf("Single-file command: %s\n", token); // can be a "cd"
         if(type_flag == BACKUP)
             send_single_file(token, token, sockfd); // (token, token)?
         else if(type_flag == RESTORE)
             restore_single_file(token, token, sockfd); 
+        else if(type_flag == VERIFY)
+            verify_file_md5(token, sockfd);
         else if(type_flag == SET_SERVER_DIR)
             set_server_directory(token, sockfd);
     }

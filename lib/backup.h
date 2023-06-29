@@ -5,6 +5,7 @@
 #define BACKUP 0
 #define RESTORE 1
 #define SET_SERVER_DIR 2
+#define VERIFY 3
 
 int send_single_file(char *src_path, char *file_name, int socket);
 int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket);
@@ -15,6 +16,6 @@ int receive_file(char *file_path,  int socket);
 int receive_multiple_files(int socket);
 
 void cd_local(char *dir);
-int verify_file_md5(char *file_path);
+void verify_file_md5(char *file_path, int socket);
 
 #endif

@@ -7,6 +7,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#define READ_BUFFER_SIZE 100
+#define MD5_DIGEST_LENGTH 100
+
 long long int get_file_size(char *path);
 char* uint8ArrayToString(uint8_t* array, size_t length);
 void get_current_directory(char *buffer, size_t size); 
@@ -15,5 +18,6 @@ int file_exists(const char *full_path_to_file);
 void save_file_info(char *file_name, char *file_path, char *output_file); 
 char *get_file_path(char *log_file, char *file_name);
 void list_files(const char* directory);
+int file_to_md5(const char* path, char* md5); 
 
 #endif  // UTILS_H

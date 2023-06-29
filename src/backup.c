@@ -395,5 +395,38 @@ void set_server_directory(char *dir_name, int socket)
 // void cd_local(const char *dir) {
 // }
 //
-// int verify_file_md5(const char *file_path) {
-// }
+void verify_file_md5(char *file_name, int socket) 
+{
+    char md5[MAX_PACKET_SIZE];
+    if(file_to_md5(file_name, md5) == -1)
+    {
+        printf("This file does not exist!\n");
+        return;
+    }
+
+    struct packet *packet = create_or_modify_packet(NULL, strlen(file_name), 0, PT_VERIFY_BACKUP, file_name);
+
+    if(send_packet_and_wait_for_response(packet, packet, PT_TIMEOUT, socket) != 0)
+    {
+        printf("Error while trying to verify the file!\n");
+        printf("Timeout?\n");
+        return;
+    }
+
+    printf("MD5 from server received!\n");
+    printf("MD5 server: %s\n", packet->data);
+    printf("MD5 local: %s\n", md5);
+
+    char *md5_server = uint8ArrayToString(packet->data, packet->size);
+
+    if(strcmp(md5, md5_server) != 0)
+    {
+        printf("The %s in the server is different from the local file!", file_name);
+    }
+    else
+    {
+        printf("The %s in the server is equal from the local file!", file_name);
+    }
+
+    free(md5_server);
+}
