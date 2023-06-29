@@ -161,6 +161,8 @@ char *get_file_path(char *log_file, char *file_name) {
             char *file_path = (char *)malloc(strlen(delimiter + 1) + 1);
             strcpy(file_path, delimiter + 1);
             file_path[strlen(delimiter)] = '\0';
+            printf(" strlen delimiter: %d\n", strlen(delimiter));
+            printf(" file path: %s\n", file_path[strlen(delimiter)]);
             return file_path;
         }
     }
