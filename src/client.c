@@ -27,7 +27,7 @@ char *current_dir;
 
 int main()
 {
-    int sockfd = create_socket("eno1");
+    int sockfd = create_socket("enp3s0");
 
     char input[100];
     char *token;
