@@ -138,7 +138,7 @@ int main() {
                 log_message("SET_SERVER_DIR received!");
                 
                 char *ssdir_command= uint8ArrayToString(buffer.data, buffer.size);
-                log_message("ssdir command:");
+                log_message("ssdir command received:");
                 log_message(ssdir_command);
 
                 if(chdir(ssdir_command) != 0)

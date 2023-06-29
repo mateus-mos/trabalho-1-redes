@@ -378,9 +378,7 @@ void set_server_directory(char *dir_name, int socket)
     }
 
     char *server_dir = uint8ArrayToString(p->data, p->size);
-    printf("ssdir executed successfully!\n");
-    printf("Current server dir:\n");
-    printf(" %s\n", server_dir);
+    printf("%s\n", server_dir);
 
     destroy_packet(p);
     // printf(" Directory configured successfully!\n");
