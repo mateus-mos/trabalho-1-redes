@@ -403,7 +403,7 @@ void verify_file_md5(char *file_name, int socket)
         return;
     }
 
-    struct packet *packet = create_or_modify_packet(NULL, strlen(file_name), 0, PT_VERIFY_BACKUP, file_name);
+    struct packet *packet = create_or_modify_packet(NULL, MAX_DATA_SIZE, 0, PT_VERIFY_BACKUP, file_name);
 
     if(send_packet_and_wait_for_response(packet, packet, PT_TIMEOUT, socket) != 0)
     {
@@ -425,11 +425,11 @@ void verify_file_md5(char *file_name, int socket)
 
     if(strcmp(md5, md5_server) != 0)
     {
-        printf("The %s in the server is different from the local file!", file_name);
+        printf("The %s in the server is different from the local file!\n", file_name);
     }
     else
     {
-        printf("The %s in the server is equal from the local file!", file_name);
+        printf("The %s in the server is equal from the local file!\n", file_name);
     }
 
     free(md5_server);
