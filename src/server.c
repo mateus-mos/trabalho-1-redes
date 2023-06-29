@@ -184,7 +184,8 @@ int main() {
 
                 log_message("Sending md5 for client...");
 
-                create_or_modify_packet(packet, MAX_PACKET_SIZE, 0, PT_MD5, md5);
+                create_or_modify_packet(packet, MAX_DATA_SIZE, 0, PT_MD5, md5);
+                log_message(packet->data);
                 send_packet(packet, socket);
                 break;
             default:
