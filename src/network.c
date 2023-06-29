@@ -152,7 +152,6 @@ int send_packet_and_wait_for_response(struct packet *packet, struct packet *resp
             return -1;
         else if(response_aux->type == PT_ACK || response_aux->type == PT_OK || response_aux->type == PT_ERROR)
             ACK_OK_received = 1;
-        }
     }
 
     create_or_modify_packet(response, response_aux->size, response_aux->sequence, response_aux->type, response_aux->data);
