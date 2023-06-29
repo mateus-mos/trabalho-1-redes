@@ -137,7 +137,7 @@ int main() {
                 log_message("SET_SERVER_DIR received!");
                 
                 char *ssdir_command= uint8ArrayToString(buffer.data, buffer.size);
-                log_message("ssdir command:");
+                log_message("ssdir command received:");
                 log_message(ssdir_command);
 
                 if(chdir(ssdir_command) != 0)
@@ -148,10 +148,11 @@ int main() {
                 }
                 else
                 {
-                    log_message("Dir changed:");
-                    log_message(ssdir_command);
+                    get_current_directory(current_directory, sizeof(current_directory));
+                    log_message("New directory:");
+                    log_message(current_directory);
                     // Send OK
-                    create_or_modify_packet(packet, MAX_DATA_SIZE, 0, PT_OK,  ssdir_command);
+                    create_or_modify_packet(packet, MAX_DATA_SIZE, 0, PT_OK, current_directory);
                     send_packet(packet, socket); 
                 }
                 break;

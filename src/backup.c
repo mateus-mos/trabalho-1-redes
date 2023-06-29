@@ -62,10 +62,10 @@ int send_single_file(char *full_path_to_file, char *file_name, int socket)
     long long file_size = get_file_size(full_path_to_file);
     int packets_quantity = ceil(file_size / (float)(MAX_DATA_SIZE));
 
-    #ifdef DEBUG
-        log_message("packets quantity");
-        //log_message(packets_quantity);
-    #endif
+#ifdef DEBUG
+    log_message("packets quantity");
+    // log_message(packets_quantity);
+#endif
 
     int packet_sequence = 1;
     for (int i = 0; i < packets_quantity; i++)
@@ -106,9 +106,9 @@ int send_single_file(char *full_path_to_file, char *file_name, int socket)
     create_or_modify_packet(p, 0, 0, PT_END_FILE, NULL);
     if (send_packet_and_wait_for_response(p, &p_buffer, PT_TIMEOUT, socket) != 0)
     {
-        #ifdef DEBUG
-                log_message("Couldn't send end file packet!\n");
-        #endif
+#ifdef DEBUG
+        log_message("Couldn't send end file packet!\n");
+#endif
         destroy_packet(p);
         return -1;
     }
@@ -125,7 +125,7 @@ int send_single_file(char *full_path_to_file, char *file_name, int socket)
  * @param socket The socket to send the files.
  * @return 0 if the files were sent successfully, -1 otherwise.
  *
-*/
+ */
 int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket)
 {
     /* Send packet for start backup multiple files */
@@ -142,9 +142,9 @@ int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, in
     {
         if (send_single_file(files[i], files[i], socket) != 0)
         {
-            #ifdef DEBUG
-                        log_message("Error while backing up multiple files!");
-            #endif
+#ifdef DEBUG
+            log_message("Error while backing up multiple files!");
+#endif
             return -1;
         }
     }
@@ -153,9 +153,9 @@ int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, in
     create_or_modify_packet(p, 0, 0, PT_END_GROUP_FILES, NULL);
     if (send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
     {
-        #ifdef DEBUG
-                log_message("Error while sending end backup multiple files packet!");
-        #endif
+#ifdef DEBUG
+        log_message("Error while sending end backup multiple files packet!");
+#endif
         destroy_packet(p);
         return -1;
     }
@@ -254,10 +254,10 @@ int receive_multiple_files(int socket)
     {
         if (listen_packet(&packet_buffer, PT_TIMEOUT, socket) != 0)
         {
-            #ifdef DEBUG
-                        log_message("An error ocurred while listening for packets");
-                        log_message("Is the server still running?");
-            #endif
+#ifdef DEBUG
+            log_message("An error ocurred while listening for packets");
+            log_message("Is the server still running?");
+#endif
             return -1;
         }
 
@@ -287,10 +287,10 @@ int receive_multiple_files(int socket)
             {
                 free(file_name);
             }
-            #ifdef DEBUG
-                        log_message("Received unexpected packet type while receiving multiple files");
-                        return -1;
-            #endif
+#ifdef DEBUG
+            log_message("Received unexpected packet type while receiving multiple files");
+            return -1;
+#endif
         }
     }
 
@@ -303,9 +303,9 @@ void restore_single_file(char *file_name, char *file_path, int socket)
 {
     struct packet *p = create_or_modify_packet(NULL, MAX_FILE_NAME_SIZE, 0, PT_RESTORE_ONE_FILE, file_name);
 
-    #ifdef DEBUG
-            log_message("Sending start restore single file packet");
-    #endif
+#ifdef DEBUG
+    log_message("Sending start restore single file packet");
+#endif
     /* Send packet for start restore single file */
     if (send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
     {
@@ -339,7 +339,7 @@ void restore_single_file(char *file_name, char *file_path, int socket)
 
     char *full_path_to_file = NULL;
     full_path_to_file = concatenate_strings(file_path, file_name);
-    
+
     printf("full_path_to_file: %s\n", full_path_to_file);
     receive_file(full_path_to_file, socket);
 
@@ -347,7 +347,7 @@ void restore_single_file(char *file_name, char *file_path, int socket)
     create_or_modify_packet(p, 0, 0, PT_END_FILE, NULL);
     if (send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
     {
-        //printf(" Error while sending end restore single file packet!\n");
+        // printf(" Error while sending end restore single file packet!\n");
         destroy_packet(p);
         return;
     }
@@ -357,11 +357,11 @@ void restore_single_file(char *file_name, char *file_path, int socket)
     return;
 }
 
-//void restore_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket)
+// void restore_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket)
 //{
-//}
+// }
 
-void set_server_directory(char *dir_name, int socket) 
+void set_server_directory(char *dir_name, int socket)
 {
     struct packet *p = create_or_modify_packet(NULL, MAX_DATA_SIZE, 0, PT_SET_SERVER_DIR, dir_name);
 
@@ -371,22 +371,21 @@ void set_server_directory(char *dir_name, int socket)
         return;
     }
 
-    if(p->type == PT_ERROR)
+    if (p->type == PT_ERROR)
     {
         log_message("Directory doesn't exist!");
         return;
     }
 
     char *server_dir = uint8ArrayToString(p->data, p->size);
-    log_message("Current server dir:");
-    log_message(server_dir);
+    printf("%s\n", server_dir);
 
     destroy_packet(p);
     // printf(" Directory configured successfully!\n");
 }
 
-//void restore_multiple_files(const char *src_dir, int socket) {
-//}
+// void restore_multiple_files(const char *src_dir, int socket) {
+// }
 
 //
 // void set_server_directory(const char *dir) {
