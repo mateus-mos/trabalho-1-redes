@@ -158,9 +158,11 @@ int main() {
             case PT_VERIFY_BACKUP:
                 log_message("PT_VERIFY_BACKUP received!");
                 char md5[MAX_PACKET_SIZE];
-                char *file_n = uint8ArrayToString(packet->data, MAX_PACKET_SIZE);
+                char *file_n = uint8ArrayToString(buffer.data, buffer.size);
                 log_message("File:");
+                log_message(file_n);
                 char *full_path = get_file_path(FILE_MAP_NAME_TO_PATH, file_n);
+                log_message(full_path);
 
                 if(full_path == NULL)
                 {
