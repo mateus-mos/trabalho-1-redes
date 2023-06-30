@@ -37,8 +37,6 @@ int main()
     char *file_name = NULL;
     char *full_path_to_file = NULL;
 
-    // int packets_received = 0;
-
     while (1)
     {
         log_message("Waiting for request...");

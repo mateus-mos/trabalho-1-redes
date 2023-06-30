@@ -19,10 +19,11 @@
 #include "../lib/log.h"
 #define PATH_MAX 100
 
-
 void change_directory(char *token, const char delimiter[]);
 void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const char delimiter[], int type_flag, int sockfd);
+void print_commands();
 char *current_dir;
+
 
 
 int main()
@@ -40,12 +41,7 @@ int main()
 
     printf("Welcome to the Backup System!\n\n");
     printf("Available commands:\n");
-    printf("- backup <filename>: Backup single file.\n");
-    printf("- backup -m <filename> <filename> ... : Backup multiples files.\n");
-    printf("- restore <filename>: Restore single file.\n");
-    printf("- restore -m <filename> <filename> ...: Restore multiples files.\n");
-    printf("- help: Show available commands.\n");
-    printf("- exit: Exit the program.\n");
+    print_commands();
     printf("\n");
 
     while (1) 
@@ -81,6 +77,10 @@ int main()
         else if(strcmp(token, "ls") == 0)
         {
             list_files(current_dir);
+        }
+        else if(strcmp(token, "help") == 0)
+        {
+            print_commands();
         }
         else if(strcmp(token, "exit") == 0)
         {
@@ -182,4 +182,18 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
         else if(type_flag == SET_SERVER_DIR)
             set_server_directory(token, sockfd);
     }
+}
+
+
+void print_commands()
+{
+    printf("- backup <filename>: Backup single file.\n");
+    printf("- backup -m <filename> <filename> ... : Backup multiples files.\n");
+    printf("- backup -w *.txt ... : Backup all the .txt on the current dir. Works with other files too!\n");
+    printf("- restore <filename>: Restore single file.\n");
+    printf("- restore -m <filename> <filename> ...: Restore multiples files.\n");
+    printf("- restore -w *.txt ... : Restore all the .txt on the current dir server.\n");
+    printf("- cd <comand>: cd local!");
+    printf("- ssdir <comand>: cd command to server!");
+    printf("- exit: Exit the program.\n");
 }
