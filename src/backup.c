@@ -211,6 +211,7 @@ int receive_file(char *file_name, int socket)
     while (!end_file_received)
     {
         printf("\r%s: %lld", file_name, packets_received);
+        printf("\rReceiving [%s]. Packets count [%lld]", file_name, packets_received);
         fflush(stdout);
         int listen_status = listen_packet(&packet_buffer, PT_TIMEOUT, socket);
 
@@ -253,7 +254,7 @@ int receive_file(char *file_name, int socket)
         log_message("File received!");
     #endif
 
-    printf("File received!");
+    printf("%s received!\n", file_name);
 
     destroy_packet(response);
     return 0;
@@ -375,7 +376,6 @@ void restore_single_file(char *file_name, int socket)
     }
 
     destroy_packet(p);
-    printf("File restored successfully!\n");
     return;
 }
 
