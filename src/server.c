@@ -80,11 +80,13 @@ int main() {
 
                 // Receive file name
                 file_name = uint8ArrayToString(buffer.data, buffer.size); 
+                log_message("File to restore:");
+                log_message(file_name);
 
                 if (access(file_name, F_OK) != 0) {
                     log_message("File does not exist!");
 
-                    create_or_modify_packet(packet, 0, 0, PT_ERROR, "File does not exist!");
+                    create_or_modify_packet(packet, MAX_DATA_SIZE, 0, PT_ERROR, "File does not exist!");
                     send_packet(packet, socket); // send ERROR
 
                     free(file_name);

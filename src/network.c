@@ -266,9 +266,20 @@ int listen_packet(struct packet *buffer, int timeout, int socket)
 int is_a_valid_packet(struct packet *p)
 {
     if(p->start_marker != START_MARKER)
+    {
+        #ifdef DEBUG
+            log_message("Start marker error!");
+        #endif
         return 0;
+    }
+
     if(p->parity != calculate_vertical_parity(p->data, p->size))
+    {
+        #ifdef DEBUG
+            log_message("Vertical parity erro!");
+        #endif
         return 0;
+    }
     
     return 1;
 }
