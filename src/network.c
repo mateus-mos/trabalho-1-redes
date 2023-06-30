@@ -120,7 +120,7 @@ int send_packet(struct packet *packet, int socket)
         close(socket);
         exit(EXIT_FAILURE);
     } 
-    //shift_bits(packet);
+    unshift_bits(packet);
     return 0;
 }
 
