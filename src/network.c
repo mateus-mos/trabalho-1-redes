@@ -20,6 +20,8 @@
 
 double time_passed(clock_t start, clock_t end);
 void shift_bits(struct packet *packet);
+int is_start_marker_correct(struct packet *p);
+int is_parity_right(struct packet *p);
 
 uint8_t calculate_vertical_parity(uint8_t packet_data[], size_t length) 
 {
@@ -239,16 +241,19 @@ int listen_packet(struct packet *buffer, int timeout, int socket)
             ssize_t bytes_received = recvfrom(socket, buffer, sizeof(struct packet), 0, NULL, NULL);
             
             if (bytes_received == -1) 
+            {
                 return -1;
+            }
 
             /* Checks if the packet is from client and if it's parity is right  */ 
-            if(is_a_valid_packet(buffer) == 0)
+            if(is_start_marker_correct(buffer) && (is_parity_right(buffer) == 0))
             {
                 struct packet *nack = create_or_modify_packet(NULL, 0, 0, PT_NACK, NULL);
                 send_packet(nack, socket);
                 destroy_packet(nack);
             }
-            else{
+            else
+            {
                 return 0;
             }
         }
@@ -263,16 +268,17 @@ int listen_packet(struct packet *buffer, int timeout, int socket)
  * 
  * @param p The packet to be checked.
 */
-int is_a_valid_packet(struct packet *p)
+int is_start_marker_correct(struct packet *p)
 {
     if(p->start_marker != START_MARKER)
     {
-        #ifdef DEBUG
-            log_message("Start marker error!");
-        #endif
         return 0;
     }
+    return 1;
+}
 
+int is_parity_right(struct packet *p)
+{
     if(p->parity != calculate_vertical_parity(p->data, p->size))
     {
         #ifdef DEBUG
@@ -280,7 +286,7 @@ int is_a_valid_packet(struct packet *p)
         #endif
         return 0;
     }
-    
+
     return 1;
 }
 
