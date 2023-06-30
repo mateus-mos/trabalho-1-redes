@@ -371,8 +371,27 @@ void set_server_directory(char *dir_name, int socket)
     // printf(" Directory configured successfully!\n");
 }
 
-// void restore_multiple_files(const char *src_dir, int socket) {
-// }
+void restore_multiple_files(char files_names[][MAX_FILE_NAME_SIZE], int files_quantity, int socket) {
+    struct packet *packet = create_or_modify_packet(NULL, 0, 0, PT_RESTORE_FILES, NULL);
+    if(send_packet_and_wait_for_response(packet, packet, PT_TIMEOUT, socket))
+    {
+        log_message("Timeout error!");
+        return;
+    }
+
+    for(int i = 0; i < files_quantity; i++)
+    {
+        restore_single_file(files_names[i], socket);
+    }
+
+    create_or_modify_packet(packet, 0, 0, PT_END_GROUP_FILES, NULL);
+
+    if(send_packet_and_wait_for_response(packet, packet, PT_TIMEOUT, socket))
+    {
+        log_message("Timeout error!");
+        return;
+    }
+}
 
 //
 // void set_server_directory(const char *dir) {
