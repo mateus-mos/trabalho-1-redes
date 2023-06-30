@@ -200,16 +200,11 @@ int receive_file(char *file_name, int socket)
         if (packet_buffer.type == PT_END_FILE)
             end_file_received = 1;
 
-        if (listen_status != 0) // parando aqui
+        if (listen_status != 0) 
         {
-            printf("\n listen_status: %d\n", listen_status);
-            log_message("An error ocurred while listening for packets");
             log_message("Is the other side still connected?");
-            fclose(file);
-            destroy_packet(response);
-            return -1;
         }
-        if (packet_buffer.type == PT_DATA)
+        else if (packet_buffer.type == PT_DATA)
         {
             /* Write received data to the file */
             fwrite(packet_buffer.data, packet_buffer.size, 1, file);
