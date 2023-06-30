@@ -195,5 +195,6 @@ void print_commands()
     printf("- restore -w *.txt ... : Restore all the .txt on the current dir server.\n");
     printf("- cd <comand>: cd local!");
     printf("- ssdir <comand>: cd command to server!");
+    printf("- help: show available commands!");
     printf("- exit: Exit the program.\n");
 }
