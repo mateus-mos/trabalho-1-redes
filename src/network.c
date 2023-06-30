@@ -113,6 +113,7 @@ void destroy_packet(struct packet *p)
 
 int send_packet(struct packet *packet, int socket)
 {
+    shift_bits(packet);
     if(send(socket, packet, sizeof(struct packet), 0) == -1) 
     {
         perror("send");
@@ -159,22 +160,11 @@ int send_packet_and_wait_for_response(struct packet *packet, struct packet *resp
 }
 
 /* Shift bits function */
-//void shift_bits(struct packet *packet, )
-//{
-//    int packet_size = packet->size;
-//
-//    /* Shift sequence */
-//    uint8_t shifted= packet->sequence >> 6;
-//    packet->size = packet->size | shifted;
-//    packet->sequence = packet->sequence << 2;
-//
-//    /* Shift type */
-//    shifted = packet->type >> 2;
-//    packet->sequence = packet->sequence | shifted;
-//    packet->type = packet->type << 6;
-//
-//
-//}
+void shift_bits(struct packet* p) {
+    p->size = p->size << 2; // shift left 2 bits to use upper 6 bits
+    p->sequence = p->sequence << 2; // shift left 2 bits to use upper 6 bits
+    p->type = p->type << 4; // shift left 4 bits to use upper 4 bits
+}
 
 /* unshift bits */
 void unshift_bits(struct packet *packet)
@@ -239,6 +229,7 @@ int listen_packet(struct packet *buffer, int timeout, int socket)
         else 
         {
             ssize_t bytes_received = recvfrom(socket, buffer, sizeof(struct packet), 0, NULL, NULL);
+            unshift_bits(buffer);
             
             if (bytes_received == -1) 
             {

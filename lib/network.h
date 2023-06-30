@@ -26,10 +26,10 @@
 #define MAX_TYPE 15
 
 struct packet {
-    uint8_t start_marker;
-    uint8_t size; // 6 bits => 2^6 - 1 = 63 
-    uint8_t sequence; // 4 bits => 2^4 - 1 = 15 
-    uint8_t type; // 4 bits => 2^4 - 1 = 15
+    uint8_t start_marker; // 1 byte
+    uint8_t size; // 6 bits
+    uint8_t sequence; // 6 bits 
+    uint8_t type; // 4 bits
     uint8_t parity; // 1 byte for parity
     uint8_t data[63]; // Max length of data is 63 bytes
 };

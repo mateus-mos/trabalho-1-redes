@@ -4,7 +4,7 @@ Protocolo das mensagens (baseado no Kermit)
 
 - Marcador de início: 8 bits [01111110]
 - Tamanho: 6 bits
-- Sequência: 4 bits
+- Sequência: 6 bits
 - Tipo: 4 bits
 - Dados: Tamanho em bytes
 - Paridade Vertical: 8 bits
