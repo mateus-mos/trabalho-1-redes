@@ -246,22 +246,25 @@ int listen_packet(struct packet *buffer, int timeout, int socket)
             }
 
             /* Checks if the packet is from client and if it's parity is right  */ 
-            if(is_start_marker_correct(buffer) && (is_parity_right(buffer) == 0))
+            if(is_start_marker_correct(buffer) )
             {
-                struct packet *nack = create_or_modify_packet(NULL, 0, 0, PT_NACK, NULL);
-                send_packet(nack, socket);
-                destroy_packet(nack);
-            }
-            else
-            {
-                return 0;
+                if (is_parity_right(buffer) == 0)
+                {
+                    struct packet *nack = create_or_modify_packet(NULL, 0, 0, PT_NACK, NULL);
+                    send_packet(nack, socket);
+                    destroy_packet(nack);
+                }
+                else
+                {
+                    // valid packet
+                    return 0;
+                }
             }
         }
         now = clock();
     }
     return -2; 
 }
-
 
 /* 
  * Checks if the start marker is correct and if the parity is correct.
@@ -270,7 +273,7 @@ int listen_packet(struct packet *buffer, int timeout, int socket)
 */
 int is_start_marker_correct(struct packet *p)
 {
-    if(p->start_marker != START_MARKER)
+    if(p->start_marker != (uint8_t)(START_MARKER))
     {
         return 0;
     }
