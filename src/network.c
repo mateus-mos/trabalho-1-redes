@@ -166,15 +166,10 @@ void shift_bits(struct packet* p) {
     p->type = p->type << 4; // shift left 4 bits to use upper 4 bits
 }
 
-/* unshift bits */
-void unshift_bits(struct packet *packet)
-{
-    packet->sequence = packet->sequence >> 2;
-    int packet_size = packet->size; // ?
-    packet->type = packet->type >> 6;
-
-    for(int i = 0; i < packet_size; i++)
-        packet->data[i] = packet->data[i] >> 12;
+void unshift_bits(struct packet* p) {
+    p->size = p->size >> 2; // shift right 2 bits to get back original 6 bits
+    p->sequence = p->sequence >> 2; // shift right 2 bits to get back original 6 bits
+    p->type = p->type >> 4; // shift right 4 bits to get back original 4 bits
 }
 
 /* clear buffer */
