@@ -22,5 +22,7 @@ char *get_file_path(char *log_file, char *file_name);
 void list_files(const char* directory);
 int file_to_md5(const char* path, char* md5); 
 int get_files(const char* pattern, char file_names[][MAX_FILE_NAME_SIZE]);
+int create_new_directory(char* directory_name);
+
 
 #endif  // UTILS_H

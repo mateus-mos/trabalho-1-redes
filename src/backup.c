@@ -136,14 +136,18 @@ int send_single_file(char *file_name, int socket)
 int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket)
 {
     /* Send packet for start backup multiple files */
-    log_message("Sending PT_BACKUP_MULTIPLE_FILES!");
+    #ifdef DEBUG
+        log_message("Sending PT_BACKUP_MULTIPLE_FILES!");
+    #endif
     struct packet *p = create_or_modify_packet(NULL, 0, 0, PT_BACKUP_MULTIPLE_FILES, NULL);
 
     /* Send packet for start backup multiple files */
     if (send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
         return -1;
 
-    log_message("Response received!");
+    #ifdef DEBUG
+        log_message("Response received!");
+    #endif
 
     for (int i = 0; i < files_quantity; i++)
     {
@@ -387,7 +391,9 @@ void set_server_directory(char *dir_name, int socket)
 
     if (p->type == PT_ERROR)
     {
-        log_message("Directory doesn't exist!");
+        #ifdef DEBUG
+            log_message("Directory doesn't exist!");
+        #endif
         return;
     }
 

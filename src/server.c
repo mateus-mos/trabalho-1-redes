@@ -152,7 +152,7 @@ int main()
             {
                 log_message("Error changing directory!");
 
-                if(create_new_directory(ssdir_command))
+                if(create_new_directory(ssdir_command) == 0)
                 {
                     log_message("New directory created with name:");
                     log_message(ssdir_command);

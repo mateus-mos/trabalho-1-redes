@@ -238,7 +238,7 @@ int file_to_md5(const char* path, char* md5) {
 
 int create_new_directory(char* directory_name) {
     
-    int result = mkdir(directory_name, 0777); // 0777 provides read, write, and execute permissions to everyone
+    int result = mkdir(directory_name, 7777); // 0777 provides read, write, and execute permissions to everyone
     
     return result;
 }

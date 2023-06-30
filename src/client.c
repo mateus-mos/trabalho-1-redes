@@ -50,7 +50,7 @@ int main()
 
     while (1) 
     {
-        printf("client:%s$ ",current_dir);
+        printf("\nclient:%s$ ",current_dir);
         fgets(input, sizeof(input), stdin);
 
         token = strtok(input, delimiter);
