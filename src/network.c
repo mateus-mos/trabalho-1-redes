@@ -20,6 +20,7 @@
 
 double time_passed(clock_t start, clock_t end);
 void shift_bits(struct packet *packet);
+void unshift_bits(struct packet* p);
 int is_start_marker_correct(struct packet *p);
 int is_parity_right(struct packet *p);
 
