@@ -114,13 +114,12 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
     if (token == NULL)
     {
         printf("--> Please provide arguments for the command.\n");
+        return;
     }
 
     // Check if it is a multi-file command
     if (strcmp(token, "-m") == 0)
     {
-        printf("--> Multi-file command.\n");
-
         /* Save all files to backup in a matrix */
         int i = 0;
         token = strtok(NULL, delimiter);

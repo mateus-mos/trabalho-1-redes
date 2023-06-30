@@ -27,7 +27,6 @@ int send_single_file(char *file_name, int socket)
     }
 
     log_message("Opening file...");
-    //full_path_to_file[strcspn(full_path_to_file, "\n")] = '\0';
     FILE *file = fopen(file_name, "rb");
 
     if (file == NULL)
@@ -61,12 +60,12 @@ int send_single_file(char *file_name, int socket)
 
     int file_read_bytes = MAX_DATA_SIZE;
     long long file_size = get_file_size(file_name);
-    int packets_quantity = ceil(file_size / (float)(MAX_DATA_SIZE));
+    long long packets_quantity = ceil(file_size / (float)(MAX_DATA_SIZE));
 
-#ifdef DEBUG
-    log_message("packets quantity");
-    // log_message(packets_quantity);
-#endif
+    #ifdef DEBUG
+        log_message("packets quantity");
+        log_message(packets_quantity);
+    #endif
 
     int packet_sequence = 1;
     for (int i = 0; i < packets_quantity; i++)
