@@ -29,6 +29,9 @@ int main()
     char current_directory[100];
     get_current_directory(current_directory, sizeof(current_directory));
 
+    log_message(current_directory);
+
+
     struct packet buffer;
     struct packet *packet = create_or_modify_packet(NULL, 0, 0, PT_ACK, NULL);
     char *file_name = NULL;

@@ -70,6 +70,35 @@ int file_exists(const char *full_path_to_file) {
     return 0;  // File does not exist
 }
 
+
+int get_files(const char* pattern, char file_names[][MAX_FILE_NAME_SIZE]) {
+    char command[MAX_FILE_NAME_SIZE + 50];
+    FILE *fp;
+    int count = 0;
+
+    //creating the command string
+    sprintf(command, "ls %s 2> /dev/null", pattern);
+
+    //execute the command
+    fp = popen(command, "r");
+    if (fp == NULL) {
+        //popen failed
+        return 0;
+    }
+
+    //reading the output and storing in file_names
+    while (fgets(file_names[count], MAX_FILE_NAME_SIZE, fp) != NULL && count < MAX_NUM_FILES) {
+        //remove the newline at the end
+        file_names[count][strcspn(file_names[count], "\n")] = 0; 
+        count++;
+    }
+    
+    //closing the file pointer
+    pclose(fp);
+    
+    return count;
+}
+
 /**
  * @brief  Concatenate two strings.
  * 

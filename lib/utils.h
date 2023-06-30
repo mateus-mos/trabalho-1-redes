@@ -1,11 +1,13 @@
 #ifndef UTILS_H
 #define UTILS_H
+#define _POSIX_C_SOURCE 2
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <string.h>
 #include <unistd.h>
+#include "../lib/backup.h"
 
 #define READ_BUFFER_SIZE 100
 #define MD5_DIGEST_LENGTH 100
@@ -19,5 +21,6 @@ void save_file_info(char *file_name, char *file_path, char *output_file);
 char *get_file_path(char *log_file, char *file_name);
 void list_files(const char* directory);
 int file_to_md5(const char* path, char* md5); 
+int get_files(const char* pattern, char file_names[][MAX_FILE_NAME_SIZE]);
 
 #endif  // UTILS_H

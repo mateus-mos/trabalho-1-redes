@@ -31,7 +31,7 @@ int main()
 
     char input[100];
     char *token;
-    char files_names[100][MAX_FILE_NAME_SIZE];
+    char files_names[MAX_NUM_FILES][MAX_FILE_NAME_SIZE];
     const char delimiter[] = " \n";
     current_dir = malloc(sizeof(int) * MAX_DATA_SIZE);
     get_current_directory(current_dir, MAX_DATA_SIZE);
@@ -57,8 +57,7 @@ int main()
         if (token == NULL) {
             continue;
         }
-
-        if (strcmp(token, "backup") == 0) // OR?
+        if (strcmp(token, "backup") == 0)
         {
             process_command(files_names, token, delimiter, BACKUP, sockfd);
         }
@@ -89,7 +88,9 @@ int main()
             return 0;
         }
         else 
+        {
             printf("--> Unsupported command: %s\n", token);
+        }
     }
 
     return 0;
@@ -131,7 +132,7 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
 
         if (i == 0)
         {
-            printf("--> Please provide arguments for the command.\n");
+            printf("Please provide arguments for the command.\n");
         }
         else if(type_flag == BACKUP)
         {
@@ -139,27 +140,37 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
         }
         else if(type_flag == RESTORE)
         {
-            struct packet *packet = create_or_modify_packet(NULL, 0, 0, PT_RESTORE_FILES, NULL);
-            if(send_packet_and_wait_for_response(packet, packet, PT_TIMEOUT, sockfd))
-            {
-                log_message("Timeout error!");
-                return;
-            }
-
-            for(int j = 0; j < i; j++)
-            {
-                restore_single_file(files_names[j], sockfd);
-            }
-
-            create_or_modify_packet(packet, 0, 0, PT_END_GROUP_FILES, NULL);
-            if(send_packet_and_wait_for_response(packet, packet, PT_TIMEOUT, sockfd))
-            {
-                log_message("Timeout error!");
-                return;
-            }
-            //restore_multiple_files(files_names, i, sockfd);
+            restore_multiple_files(files_names, i, sockfd);
         }
     } 
+    else if (strcmp(token, "-w") == 0)
+    {
+        /* Save all files to backup in a matrix */
+        token = strtok(NULL, delimiter);
+
+        if(token == NULL)
+        {
+            printf("Please provide arguments for the command.\n");
+            return;
+        }
+
+        int files_quantity = get_files(token, files_names);
+
+        if(files_quantity == 0)
+        {
+            printf("Couldn't find any files!");
+            return;
+        }
+
+        if(type_flag == RESTORE)
+        {
+            restore_multiple_files(files_names, files_quantity, sockfd);
+        }
+        else if (type_flag == BACKUP)
+        {
+            send_multiple_files(files_names, files_quantity, sockfd);
+        }
+    }
     else
     {
         if(type_flag == BACKUP)
