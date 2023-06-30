@@ -54,7 +54,6 @@ int main() {
                 send_packet(packet, socket); 
 
                 file_name = uint8ArrayToString(buffer.data, buffer.size);
-                //full_path_to_file = concatenate_strings(current_directory, file_name);
 
                 if(receive_file(file_name, socket) == -1){
                     log_message("Error receiving file!");
@@ -145,7 +144,6 @@ int main() {
                     get_current_directory(current_directory, sizeof(current_directory));
                     log_message("New directory:");
                     log_message(current_directory);
-                    // Send OK
                     create_or_modify_packet(packet, MAX_DATA_SIZE, 0, PT_OK, current_directory);
                     send_packet(packet, socket); 
                 }
@@ -156,7 +154,6 @@ int main() {
                 file_name = uint8ArrayToString(buffer.data, buffer.size);
                 log_message("File:");
                 log_message(file_name);
-                //ull_path_to_file = concatenate_strings(current_directory, file_n);
 
                 if (access(file_name, F_OK) != 0) {
                     log_message("File does not exist!");

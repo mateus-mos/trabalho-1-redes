@@ -136,22 +136,19 @@ int send_packet(struct packet *packet, int socket)
 */
 int send_packet_and_wait_for_response(struct packet *packet, struct packet *response, int timeout, int socket)
 {
-    int ACK_OK_received = 0;
+    int response_confirmation = 0;
     struct packet *response_aux = create_or_modify_packet(NULL, 0, 0, PT_ACK, NULL);
 
-    while(!ACK_OK_received)
+    while(!response_confirmation)
     {
         send_packet(packet, socket);
 
-        //log_message("Packet sent, waiting for response...");
         int listen_response = listen_packet(response_aux, timeout, socket);
-        //log_message("Response received!"
-
     
         if(listen_response == -1) 
             return -1;
         else if(response_aux->type == PT_ACK || response_aux->type == PT_OK || response_aux->type == PT_ERROR || response_aux->type == PT_MD5)
-            ACK_OK_received = 1;
+            response_confirmation = 1;
     }
 
     create_or_modify_packet(response, response_aux->size, response_aux->sequence, response_aux->type, response_aux->data);

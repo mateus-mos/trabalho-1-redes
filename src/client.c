@@ -149,7 +149,7 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
 
             for(int j = 0; j < i; j++)
             {
-                restore_single_file(files_names[j], current_dir, sockfd);
+                restore_single_file(files_names[j], sockfd);
             }
 
             create_or_modify_packet(packet, 0, 0, PT_END_GROUP_FILES, NULL);
@@ -166,7 +166,7 @@ void process_command(char files_names[][MAX_FILE_NAME_SIZE], char *token, const 
         if(type_flag == BACKUP)
             send_single_file(token, sockfd); // (token, token)?
         else if(type_flag == RESTORE)
-            restore_single_file(token, token, sockfd); 
+            restore_single_file(token, sockfd); 
         else if(type_flag == VERIFY)
             verify_file_md5(token, sockfd);
         else if(type_flag == SET_SERVER_DIR)

@@ -39,6 +39,7 @@ int send_single_file(char *file_name, int socket)
     log_message("File opened!");
     struct packet *p = create_or_modify_packet(NULL, MAX_DATA_SIZE, 0, PT_BACKUP_ONE_FILE, file_name);
 
+    log_message(file_name);
     if (p == NULL)
     {
         perror("Could not create packet!");
@@ -166,19 +167,19 @@ int send_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, in
 /*
  * Receives a single file from the client.
  *
- * @param full_path The full path of the file to be received.
+ * @param file_name The full path of the file to be received.
  * @param socket The socket to receive the file.
  *
  * @return 0 if the file was received successfully, -1 otherwise.
  *
  */
-int receive_file(char *full_path, int socket)
+int receive_file(char *file_name, int socket)
 {
     log_message("Receiving file:");
-    log_message(full_path);
+    log_message(file_name);
 
     // Create a file with "file_name"
-    FILE *file = fopen(full_path, "wb");
+    FILE *file = fopen(file_name, "wb");
     if (file == NULL)
     {
         perror("Error opening the file");
@@ -299,13 +300,13 @@ int receive_multiple_files(int socket)
     return 0;
 }
 
-void restore_single_file(char *file_name, char *file_path, int socket)
+void restore_single_file(char *file_name, int socket)
 {
     struct packet *p = create_or_modify_packet(NULL, MAX_FILE_NAME_SIZE, 0, PT_RESTORE_ONE_FILE, file_name);
 
-#ifdef DEBUG
-    log_message("Sending start restore single file packet");
-#endif
+    #ifdef DEBUG
+        log_message("Sending start restore single file packet");
+    #endif
     /* Send packet for start restore single file */
     if (send_packet_and_wait_for_response(p, p, PT_TIMEOUT, socket) != 0)
     {
@@ -337,11 +338,7 @@ void restore_single_file(char *file_name, char *file_path, int socket)
     create_or_modify_packet(p, 0, 0, PT_OK, NULL);
     send_packet(p, socket);
 
-    char *full_path_to_file = NULL;
-    full_path_to_file = concatenate_strings(file_path, file_name);
-
-    printf("full_path_to_file: %s\n", full_path_to_file);
-    receive_file(full_path_to_file, socket);
+    receive_file(file_name, socket);
 
     /* Send end restore single file packet */
     create_or_modify_packet(p, 0, 0, PT_END_FILE, NULL);
@@ -356,10 +353,6 @@ void restore_single_file(char *file_name, char *file_path, int socket)
     printf(" File restored successfully!\n");
     return;
 }
-
-// void restore_multiple_files(char files[][MAX_FILE_NAME_SIZE], int files_quantity, int socket)
-//{
-// }
 
 void set_server_directory(char *dir_name, int socket)
 {
